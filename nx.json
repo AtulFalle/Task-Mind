@@ -40,5 +40,6 @@
       "style": "scss",
       "unitTestRunner": "vitest-angular"
     }
-  }
+  },
+  "nxCloudId": "69ff8742c7a8425a305fade7"
 }
