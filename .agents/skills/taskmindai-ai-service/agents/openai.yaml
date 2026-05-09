@@ -1,0 +1,3 @@
+display_name: TaskMindAI AI Service
+short_description: FastAPI/Ollama constraints for future applicability-aware AI suggestions.
+default_prompt: Use TaskMindAI AI-service constraints for future AI service planning or implementation.

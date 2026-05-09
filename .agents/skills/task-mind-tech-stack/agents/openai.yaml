@@ -1,0 +1,3 @@
+display_name: TaskMindAI Stack Router
+short_description: Routes cross-stack TaskMindAI work to the focused product and technology skills.
+default_prompt: Use the TaskMindAI stack router to choose the right focused skill before generating or modifying code.

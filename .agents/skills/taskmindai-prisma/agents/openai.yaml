@@ -1,0 +1,3 @@
+display_name: TaskMindAI Prisma
+short_description: Prisma/PostgreSQL persistence rules for teaching memory and applicability data.
+default_prompt: Use TaskMindAI Prisma conventions for database schema and migration work.

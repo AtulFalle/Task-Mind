@@ -1,0 +1,3 @@
+display_name: TaskMindAI Product
+short_description: Product scope, MVP constraints, teaching memory, and applicability behavior.
+default_prompt: Use TaskMindAI product constraints before making product, domain, or MVP scope decisions.

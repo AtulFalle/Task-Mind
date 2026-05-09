@@ -1,0 +1,3 @@
+display_name: TaskMindAI Docker
+short_description: Docker Compose and container conventions for TaskMindAI.
+default_prompt: Use TaskMindAI Docker conventions for local services and container workflows.

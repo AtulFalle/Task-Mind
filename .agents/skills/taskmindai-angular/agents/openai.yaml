@@ -1,0 +1,3 @@
+display_name: TaskMindAI Angular
+short_description: Latest stable Angular frontend conventions for the Document Studio UI.
+default_prompt: Use TaskMindAI Angular conventions for frontend generation and edits.

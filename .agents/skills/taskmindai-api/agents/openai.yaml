@@ -1,0 +1,3 @@
+display_name: TaskMindAI API
+short_description: NestJS REST API conventions for MVP Document Studio.
+default_prompt: Use TaskMindAI API conventions for backend generation and edits.
