@@ -7,7 +7,12 @@
     "production": [
       "default",
       "!{projectRoot}/.eslintrc.json",
-      "!{projectRoot}/eslint.config.mjs"
+      "!{projectRoot}/eslint.config.mjs",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/jest.config.[jt]s",
+      "!{projectRoot}/src/test-setup.[jt]s",
+      "!{projectRoot}/test-setup.[jt]s"
     ],
     "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
   },
@@ -41,5 +46,33 @@
       "unitTestRunner": "vitest-angular"
     }
   },
-  "nxCloudId": "69ff8742c7a8425a305fade7"
+  "nxCloudId": "69ff8742c7a8425a305fade7",
+  "plugins": [
+    {
+      "plugin": "@nx/webpack/plugin",
+      "exclude": [".agents/**"],
+      "options": {
+        "buildTargetName": "build",
+        "serveTargetName": "serve",
+        "previewTargetName": "preview",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps",
+        "serveStaticTargetName": "serve-static"
+      }
+    },
+    {
+      "plugin": "@nx/eslint/plugin",
+      "exclude": [".agents/**"],
+      "options": {
+        "targetName": "eslint:lint"
+      }
+    },
+    {
+      "plugin": "@nx/jest/plugin",
+      "exclude": [".agents/**"],
+      "options": {
+        "targetName": "test"
+      }
+    }
+  ]
 }
