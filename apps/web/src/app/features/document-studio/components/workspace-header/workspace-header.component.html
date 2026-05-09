@@ -1,0 +1,31 @@
+<header class="workspace-header">
+  <a mat-button routerLink="/workspaces">
+    <mat-icon aria-hidden="true">arrow_back</mat-icon>
+    Workspaces
+  </a>
+
+  <div class="workspace-header__content">
+    <div>
+      <p class="workspace-header__eyebrow">Operational workspace</p>
+      <h1 class="workspace-header__title">{{ workspace().name }}</h1>
+      <p class="workspace-header__description">
+        {{ workspace().description || 'No description added yet.' }}
+      </p>
+    </div>
+
+    <dl class="workspace-header__metadata" aria-label="Workspace metadata">
+      <div>
+        <dt>Studio</dt>
+        <dd>{{ workspace().studioType }}</dd>
+      </div>
+      <div>
+        <dt>Created</dt>
+        <dd>{{ workspace().createdAt | date: 'medium' }}</dd>
+      </div>
+      <div>
+        <dt>Updated</dt>
+        <dd>{{ workspace().updatedAt | date: 'medium' }}</dd>
+      </div>
+    </dl>
+  </div>
+</header>

@@ -58,14 +58,27 @@
     color: #8a1c1c;
   }
 
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-    gap: 1rem;
+  &__table-wrap {
+    overflow-x: auto;
+    border: 1px solid #d9e0ea;
+    border-radius: 8px;
+    background: #ffffff;
   }
 
-  &__card {
-    min-height: 12rem;
+  &__table {
+    width: 100%;
+    min-width: 44rem;
+
+    strong,
+    span {
+      display: block;
+    }
+
+    span {
+      margin-top: 0.2rem;
+      color: #526276;
+      font-size: 0.875rem;
+    }
   }
 }
 

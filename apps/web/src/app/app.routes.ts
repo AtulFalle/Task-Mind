@@ -16,21 +16,17 @@ export const appRoutes: Route[] = [
       ),
   },
   {
-    path: 'workspaces/new',
+    path: 'workspaces/:workspaceId/documents/:documentId',
     loadComponent: () =>
       import(
-        './features/workspaces/create-workspace/create-workspace.component'
-      ).then(
-        (m) => m.CreateWorkspaceComponent,
-      ),
+        './features/document-studio/pages/document-detail/document-detail.component'
+      ).then((m) => m.DocumentDetailComponent),
   },
   {
     path: 'workspaces/:workspaceId',
     loadComponent: () =>
       import(
-        './features/workspaces/workspace-detail/workspace-detail.component'
-      ).then(
-        (m) => m.WorkspaceDetailComponent,
-      ),
+        './features/document-studio/pages/workspace-detail/workspace-detail.component'
+      ).then((m) => m.WorkspaceDetailComponent),
   },
 ];

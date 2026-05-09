@@ -1,0 +1,45 @@
+.document-list {
+  display: grid;
+  gap: 1rem;
+
+  &__header {
+    h2,
+    p {
+      margin: 0;
+    }
+
+    p {
+      margin-top: 0.35rem;
+      color: #526276;
+    }
+  }
+
+  &__status {
+    display: grid;
+    place-items: center;
+    min-height: 12rem;
+    border: 1px solid #d9e0ea;
+    border-radius: 8px;
+    background: #ffffff;
+  }
+
+  &__error {
+    margin: 0;
+    padding: 1rem;
+    border-radius: 8px;
+    background: #fdecec;
+    color: #8a1c1c;
+  }
+
+  &__table-wrap {
+    overflow-x: auto;
+    border: 1px solid #d9e0ea;
+    border-radius: 8px;
+    background: #ffffff;
+  }
+
+  &__table {
+    width: 100%;
+    min-width: 44rem;
+  }
+}

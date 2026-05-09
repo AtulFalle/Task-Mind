@@ -1,0 +1,27 @@
+.document-studio {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+
+  &__status {
+    display: grid;
+    place-items: center;
+    min-height: 18rem;
+  }
+
+  &__error {
+    margin: 0;
+    padding: 1rem;
+    border-radius: 8px;
+    background: #fdecec;
+    color: #8a1c1c;
+  }
+}
+
+@media (min-width: 768px) {
+  .document-studio {
+    padding-inline: 2rem;
+  }
+}

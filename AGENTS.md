@@ -63,6 +63,7 @@ Current code is boilerplate and may be replaced as the repo evolves. Do not pres
 - Implement incrementally with small focused components, services, DTOs, and modules.
 - Keep folder boundaries explicit and feature-first.
 - In Angular features, every component must live in its own folder with its `.component.ts`, `.component.html`, and `.component.scss` files together. Do not place multiple component files flat at the feature root.
+- Use tables for record listings across the app rather than card/list layouts, unless the user explicitly requests another presentation.
 - In Angular UI code, avoid manual `subscribe()` calls. Prefer Angular resource APIs with signals and effects for async state. Use `subscribe()` only when the user explicitly asks for it or when a documented Angular integration has no resource/signal alternative.
 - When adding or changing NestJS APIs in `apps/api`, add or update Swagger decorators, request DTO metadata, and response DTO documentation in the same change so `/api/docs` stays accurate.
 - Avoid premature reusable frameworks, broad platform abstractions, and enterprise patterns before the MVP needs them.

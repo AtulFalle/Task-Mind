@@ -1,0 +1,26 @@
+.empty-documents {
+  display: grid;
+  place-items: center;
+  min-height: 14rem;
+  padding: 2rem;
+  border: 1px dashed #b9c4d2;
+  border-radius: 8px;
+  background: #ffffff;
+  text-align: center;
+
+  h3,
+  p {
+    margin: 0;
+  }
+
+  p {
+    margin-top: 0.5rem;
+    color: #526276;
+  }
+
+  &__icon {
+    margin-bottom: 0.75rem;
+    color: #5f6f82;
+    transform: scale(1.4);
+  }
+}

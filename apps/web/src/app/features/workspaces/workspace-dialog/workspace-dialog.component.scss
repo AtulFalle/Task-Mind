@@ -1,16 +1,10 @@
-.create-workspace {
-  max-width: 42rem;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
+.workspace-dialog {
+  min-width: min(32rem, calc(100vw - 3rem));
 
-  &__card {
-    margin-top: 1rem;
-  }
-
-  &__form {
+  &__content {
     display: grid;
     gap: 1rem;
-    padding-top: 1.5rem;
+    padding-top: 0.5rem;
   }
 
   &__error {

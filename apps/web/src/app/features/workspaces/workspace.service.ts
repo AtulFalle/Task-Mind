@@ -1,6 +1,16 @@
 import { httpResource } from '@angular/common/http';
 import { Injectable, type Injector, type Signal } from '@angular/core';
-import type { CreateWorkspaceRequest, Workspace } from '@task-mind/shared';
+import type {
+  CreateWorkspaceRequest,
+  UpdateWorkspaceRequest,
+  Workspace,
+} from '@task-mind/shared';
+
+export interface SaveWorkspaceRequest {
+  requestId: number;
+  workspaceId?: string;
+  workspace: CreateWorkspaceRequest | UpdateWorkspaceRequest;
+}
 
 @Injectable({ providedIn: 'root' })
 export class WorkspaceService {
@@ -23,19 +33,21 @@ export class WorkspaceService {
     );
   }
 
-  createWorkspaceResource(
-    workspaceRequest: Signal<CreateWorkspaceRequest | null>,
+  saveWorkspaceResource(
+    workspaceRequest: Signal<SaveWorkspaceRequest | null>,
     injector: Injector,
   ) {
     return httpResource<Workspace>(
       () => {
-        const request = workspaceRequest();
+        const saveRequest = workspaceRequest();
 
-        return request
+        return saveRequest
           ? {
-              body: request,
-              method: 'POST',
-              url: this.apiUrl,
+              body: saveRequest.workspace,
+              method: saveRequest.workspaceId ? 'PUT' : 'POST',
+              url: saveRequest.workspaceId
+                ? `${this.apiUrl}/${saveRequest.workspaceId}`
+                : this.apiUrl,
             }
           : undefined;
       },

@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>{{ dialogTitle }}</h2>
+
+<form
+  class="workspace-dialog"
+  [formGroup]="workspaceForm"
+  (ngSubmit)="saveWorkspace()"
+>
+  <mat-dialog-content class="workspace-dialog__content">
+    <mat-form-field appearance="outline">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" />
+      @if (workspaceForm.controls.name.hasError('required')) {
+        <mat-error>Name is required.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Description</mat-label>
+      <textarea matInput rows="4" formControlName="description"></textarea>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Studio type</mat-label>
+      <mat-select formControlName="studioType">
+        @for (studioType of studioTypes; track studioType) {
+          <mat-option [value]="studioType">{{ studioType }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    @if (errorMessage()) {
+      <p class="workspace-dialog__error">{{ errorMessage() }}</p>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close>Cancel</button>
+    <button mat-flat-button type="submit" [disabled]="isSaving()">
+      {{ submitLabel }}
+    </button>
+  </mat-dialog-actions>
+</form>

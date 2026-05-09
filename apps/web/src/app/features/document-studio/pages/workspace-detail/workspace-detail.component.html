@@ -1,0 +1,23 @@
+<section class="document-studio" aria-label="Workspace detail">
+  @if (workspaceResource.isLoading()) {
+    <div class="document-studio__status">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else if (workspaceErrorMessage()) {
+    <p class="document-studio__error">{{ workspaceErrorMessage() }}</p>
+  } @else if (workspace(); as workspace) {
+    <app-workspace-header [workspace]="workspace"></app-workspace-header>
+
+    <app-document-upload
+      [workspaceId]="workspace.id"
+      [onUploaded]="handleDocumentUploaded"
+    ></app-document-upload>
+
+    <app-document-list
+      [workspaceId]="workspace.id"
+      [documents]="documents()"
+      [isLoading]="documentsResource.isLoading()"
+      [errorMessage]="documentsErrorMessage()"
+    ></app-document-list>
+  }
+</section>

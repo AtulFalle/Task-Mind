@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   ValidationPipe,
 } from '@nestjs/common';
 import {
@@ -17,6 +18,7 @@ import {
 } from '@nestjs/swagger';
 import type { Workspace } from '@task-mind/shared';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
+import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { WorkspaceDto } from './dto/workspace.dto';
 import { WorkspacesService } from './workspaces.service';
 
@@ -64,5 +66,26 @@ export class WorkspacesController {
   @ApiNotFoundResponse({ description: 'Workspace was not found.' })
   findOne(@Param('id') id: string): Workspace {
     return this.workspacesService.findOne(id);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update a workspace' })
+  @ApiParam({
+    name: 'id',
+    description: 'Workspace id.',
+    example: '8ef84f25-08d8-43bd-b6ac-6c67e7f5edb2',
+  })
+  @ApiBody({ type: UpdateWorkspaceDto })
+  @ApiOkResponse({
+    description: 'Workspace updated.',
+    type: WorkspaceDto,
+  })
+  @ApiNotFoundResponse({ description: 'Workspace was not found.' })
+  update(
+    @Param('id') id: string,
+    @Body(new ValidationPipe({ whitelist: true, transform: true }))
+    updateWorkspaceDto: UpdateWorkspaceDto,
+  ): Workspace {
+    return this.workspacesService.update(id, updateWorkspaceDto);
   }
 }

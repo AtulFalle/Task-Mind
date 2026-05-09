@@ -1,0 +1,53 @@
+<section class="document-detail" aria-labelledby="document-detail-title">
+  <a mat-button [routerLink]="['/workspaces', workspaceId()]">
+    <mat-icon aria-hidden="true">arrow_back</mat-icon>
+    Workspace
+  </a>
+
+  @if (documentResource.isLoading()) {
+    <div class="document-detail__status">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else if (errorMessage()) {
+    <p class="document-detail__error">{{ errorMessage() }}</p>
+  } @else if (document(); as document) {
+    <mat-card class="document-detail__metadata" appearance="outlined">
+      <mat-card-header>
+        <mat-card-title id="document-detail-title">
+          {{ document.originalName }}
+        </mat-card-title>
+        <mat-card-subtitle>{{ document.status }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <dl>
+          <div>
+            <dt>Type</dt>
+            <dd>{{ document.mimeType }}</dd>
+          </div>
+          <div>
+            <dt>Size</dt>
+            <dd>{{ document.size }} bytes</dd>
+          </div>
+          <div>
+            <dt>Uploaded</dt>
+            <dd>{{ document.createdAt | date: 'medium' }}</dd>
+          </div>
+          <div>
+            <dt>Stored file</dt>
+            <dd>{{ document.fileName }}</dd>
+          </div>
+        </dl>
+      </mat-card-content>
+    </mat-card>
+
+    <section class="document-detail__viewer" aria-labelledby="viewer-title">
+      <h2 id="viewer-title">Document viewer</h2>
+      <p>Parsed text and document preview will appear here in a later task.</p>
+    </section>
+
+    <section class="document-detail__annotations" aria-labelledby="annotations-title">
+      <h2 id="annotations-title">Annotation workspace</h2>
+      <p>Highlights, operational rules, and teaching corrections will appear here later.</p>
+    </section>
+  }
+</section>

@@ -1,5 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type { CreateWorkspaceRequest, Workspace } from '@task-mind/shared';
+import type {
+  CreateWorkspaceRequest,
+  UpdateWorkspaceRequest,
+  Workspace,
+} from '@task-mind/shared';
 import { randomUUID } from 'node:crypto';
 
 @Injectable()
@@ -36,5 +40,20 @@ export class WorkspacesService {
     }
 
     return workspace;
+  }
+
+  update(id: string, updateWorkspace: UpdateWorkspaceRequest): Workspace {
+    const workspace = this.findOne(id);
+    const updatedWorkspace: Workspace = {
+      ...workspace,
+      name: updateWorkspace.name.trim(),
+      description: updateWorkspace.description?.trim() || undefined,
+      studioType: updateWorkspace.studioType,
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.workspaces.set(id, updatedWorkspace);
+
+    return updatedWorkspace;
   }
 }

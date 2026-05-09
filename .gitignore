@@ -48,3 +48,6 @@ Thumbs.db
 __screenshots__/
 
 .nx/polygraph
+
+/storage/documents/*
+!/storage/documents/.gitkeep

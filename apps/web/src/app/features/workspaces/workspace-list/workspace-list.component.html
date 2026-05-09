@@ -7,10 +7,10 @@
       </h1>
     </div>
 
-    <a mat-flat-button routerLink="/workspaces/new">
+    <button mat-flat-button type="button" (click)="openCreateWorkspaceDialog()">
       <mat-icon aria-hidden="true">add</mat-icon>
       New workspace
-    </a>
+    </button>
   </div>
 
   @if (isLoading()) {
@@ -20,27 +20,49 @@
   } @else if (errorMessage()) {
     <p class="workspace-list__error">{{ errorMessage() }}</p>
   } @else if (hasWorkspaces()) {
-    <div class="workspace-list__grid">
-      @for (workspace of workspaces(); track workspace.id) {
-        <mat-card class="workspace-list__card" appearance="outlined">
-          <mat-card-header>
-            <mat-card-title>{{ workspace.name }}</mat-card-title>
-            <mat-card-subtitle>{{ workspace.studioType }}</mat-card-subtitle>
-          </mat-card-header>
+    <div class="workspace-list__table-wrap">
+      <table mat-table [dataSource]="workspaces()" class="workspace-list__table">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let workspace">
+            <strong>{{ workspace.name }}</strong>
+            <span>{{ workspace.description || 'No description added yet.' }}</span>
+          </td>
+        </ng-container>
 
-          <mat-card-content>
-            <p>
-              {{ workspace.description || 'No description added yet.' }}
-            </p>
-          </mat-card-content>
+        <ng-container matColumnDef="studioType">
+          <th mat-header-cell *matHeaderCellDef>Studio</th>
+          <td mat-cell *matCellDef="let workspace">
+            {{ workspace.studioType }}
+          </td>
+        </ng-container>
 
-          <mat-card-actions align="end">
+        <ng-container matColumnDef="updatedAt">
+          <th mat-header-cell *matHeaderCellDef>Updated</th>
+          <td mat-cell *matCellDef="let workspace">
+            {{ workspace.updatedAt | date: 'medium' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let workspace">
+            <button
+              mat-button
+              type="button"
+              (click)="openEditWorkspaceDialog(workspace)"
+            >
+              Edit
+            </button>
             <a mat-button [routerLink]="['/workspaces', workspace.id]">
               Open
             </a>
-          </mat-card-actions>
-        </mat-card>
-      }
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
     </div>
   } @else {
     <div class="workspace-list__empty">
@@ -49,7 +71,13 @@
       </mat-icon>
       <h2>No workspaces yet</h2>
       <p>Create a Document Studio workspace to begin teaching workflows.</p>
-      <a mat-flat-button routerLink="/workspaces/new">Create workspace</a>
+      <button
+        mat-flat-button
+        type="button"
+        (click)="openCreateWorkspaceDialog()"
+      >
+        Create workspace
+      </button>
     </div>
   }
 </section>
