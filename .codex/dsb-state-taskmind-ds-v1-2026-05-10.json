@@ -1,0 +1,26 @@
+{
+  "runId": "taskmind-ds-v1-2026-05-10",
+  "fileKey": "vyNOJtwuHjJUBaz5pPsdLH",
+  "phase": "blocked-rate-limit-before-phase2",
+  "constraints": {
+    "figmaPlan": "free",
+    "pageStrategy": "single-page",
+    "modes": ["Value"]
+  },
+  "entities": {
+    "collections": {
+      "primitives": "VariableCollectionId:6:2",
+      "color": "VariableCollectionId:6:3",
+      "layout": "VariableCollectionId:6:4",
+      "typography": "VariableCollectionId:6:5"
+    },
+    "counts": {
+      "variables": 58,
+      "textStyles": 6,
+      "effectStyles": 2
+    }
+  },
+  "completedSteps": ["phase0-discovery", "phase1-foundations"],
+  "blockedBy": "Figma Starter plan MCP tool call limit reached before single-page canvas/component creation.",
+  "pendingValidations": ["phase2-page-screenshot", "button-metadata", "button-screenshot"]
+}

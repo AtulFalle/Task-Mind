@@ -1,0 +1,29 @@
+.create-workspace {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+
+  &__card {
+    margin-top: 1rem;
+  }
+
+  &__form {
+    display: grid;
+    gap: 1rem;
+    padding-top: 1.5rem;
+  }
+
+  &__error {
+    margin: 0;
+    padding: 0.85rem 1rem;
+    border-radius: 8px;
+    background: #fdecec;
+    color: #8a1c1c;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+  }
+}

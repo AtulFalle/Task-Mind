@@ -1,0 +1,36 @@
+<section class="workspace-detail" aria-labelledby="workspace-detail-title">
+  <a mat-button routerLink="/workspaces">
+    <mat-icon aria-hidden="true">arrow_back</mat-icon>
+    Workspaces
+  </a>
+
+  @if (isLoading()) {
+    <div class="workspace-detail__status">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else if (errorMessage()) {
+    <p class="workspace-detail__error">{{ errorMessage() }}</p>
+  } @else if (workspace(); as workspace) {
+    <mat-card class="workspace-detail__card" appearance="outlined">
+      <mat-card-header>
+        <mat-card-title id="workspace-detail-title">
+          {{ workspace.name }}
+        </mat-card-title>
+        <mat-card-subtitle>{{ workspace.studioType }}</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <dl class="workspace-detail__meta">
+          <div>
+            <dt>Description</dt>
+            <dd>{{ workspace.description || 'No description added yet.' }}</dd>
+          </div>
+          <div>
+            <dt>Created</dt>
+            <dd>{{ createdDate() }}</dd>
+          </div>
+        </dl>
+      </mat-card-content>
+    </mat-card>
+  }
+</section>

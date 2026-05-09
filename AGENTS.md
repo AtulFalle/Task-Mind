@@ -62,6 +62,7 @@ Current code is boilerplate and may be replaced as the repo evolves. Do not pres
 - Write readable code before clever abstractions.
 - Implement incrementally with small focused components, services, DTOs, and modules.
 - Keep folder boundaries explicit and feature-first.
+- When adding or changing NestJS APIs in `apps/api`, add or update Swagger decorators, request DTO metadata, and response DTO documentation in the same change so `/api/docs` stays accurate.
 - Avoid premature reusable frameworks, broad platform abstractions, and enterprise patterns before the MVP needs them.
 - Use Nx generators for scaffolding, Nx targets for validation, and shared libraries only when code is truly shared.
 - This repo uses `package-lock.json`; prefer `npm exec nx ...`. If the local npm shim fails, use `node node_modules/nx/dist/bin/nx.js ...` and mention the fallback.

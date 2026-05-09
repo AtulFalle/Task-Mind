@@ -1,33 +1,37 @@
 .app-shell {
   min-height: 100vh;
-  padding: 3rem;
-  background: #f7f8fa;
-  color: #17202a;
+  background: #f5f7fb;
+  color: #152033;
 }
 
-.app-shell__intro {
-  max-width: 48rem;
+.app-shell__header {
+  border-bottom: 1px solid #d9e0ea;
+  background: #ffffff;
+}
+
+.app-shell__brand {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 1rem 1.5rem;
+  color: inherit;
+  text-decoration: none;
 }
 
 .app-shell__eyebrow {
-  margin: 0 0 0.75rem;
-  color: #51606f;
-  font-size: 0.875rem;
+  color: #526276;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .app-shell__title {
-  margin: 0;
-  font-size: 2.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  line-height: 1.1;
 }
 
-.app-shell__summary {
-  margin: 1rem 0 0;
-  color: #3d4a57;
-  font-size: 1.125rem;
-  line-height: 1.6;
+@media (min-width: 768px) {
+  .app-shell__brand {
+    padding-inline: 2rem;
+  }
 }

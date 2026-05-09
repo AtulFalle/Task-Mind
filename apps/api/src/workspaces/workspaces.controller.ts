@@ -1,0 +1,68 @@
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  ValidationPipe,
+} from '@nestjs/common';
+import {
+  ApiBody,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
+import type { Workspace } from '@task-mind/shared';
+import { CreateWorkspaceDto } from './dto/create-workspace.dto';
+import { WorkspaceDto } from './dto/workspace.dto';
+import { WorkspacesService } from './workspaces.service';
+
+@ApiTags('workspaces')
+@Controller('workspaces')
+export class WorkspacesController {
+  constructor(private readonly workspacesService: WorkspacesService) {}
+
+  @Post()
+  @ApiOperation({ summary: 'Create a Document Studio workspace' })
+  @ApiBody({ type: CreateWorkspaceDto })
+  @ApiCreatedResponse({
+    description: 'Workspace created.',
+    type: WorkspaceDto,
+  })
+  create(
+    @Body(new ValidationPipe({ whitelist: true, transform: true }))
+    createWorkspaceDto: CreateWorkspaceDto,
+  ): Workspace {
+    return this.workspacesService.create(createWorkspaceDto);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'List workspaces' })
+  @ApiOkResponse({
+    description: 'Workspaces ordered newest first.',
+    type: WorkspaceDto,
+    isArray: true,
+  })
+  findAll(): Workspace[] {
+    return this.workspacesService.findAll();
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a workspace by id' })
+  @ApiParam({
+    name: 'id',
+    description: 'Workspace id.',
+    example: '8ef84f25-08d8-43bd-b6ac-6c67e7f5edb2',
+  })
+  @ApiOkResponse({
+    description: 'Workspace found.',
+    type: WorkspaceDto,
+  })
+  @ApiNotFoundResponse({ description: 'Workspace was not found.' })
+  findOne(@Param('id') id: string): Workspace {
+    return this.workspacesService.findOne(id);
+  }
+}
