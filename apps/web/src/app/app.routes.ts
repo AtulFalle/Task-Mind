@@ -9,22 +9,28 @@ export const appRoutes: Route[] = [
   {
     path: 'workspaces',
     loadComponent: () =>
-      import('./features/workspaces/workspace-list.page').then(
-        (m) => m.WorkspaceListPage,
+      import(
+        './features/workspaces/workspace-list/workspace-list.component'
+      ).then(
+        (m) => m.WorkspaceListComponent,
       ),
   },
   {
     path: 'workspaces/new',
     loadComponent: () =>
-      import('./features/workspaces/create-workspace.page').then(
-        (m) => m.CreateWorkspacePage,
+      import(
+        './features/workspaces/create-workspace/create-workspace.component'
+      ).then(
+        (m) => m.CreateWorkspaceComponent,
       ),
   },
   {
     path: 'workspaces/:workspaceId',
     loadComponent: () =>
-      import('./features/workspaces/workspace-detail.page').then(
-        (m) => m.WorkspaceDetailPage,
+      import(
+        './features/workspaces/workspace-detail/workspace-detail.component'
+      ).then(
+        (m) => m.WorkspaceDetailComponent,
       ),
   },
 ];

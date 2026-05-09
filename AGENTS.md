@@ -50,8 +50,8 @@ Current code is boilerplate and may be replaced as the repo evolves. Do not pres
 ## Required Skills
 
 - Use `taskmindai-product` for product scope, MVP boundaries, teaching memory, and applicability decisions.
-- Use `taskmindai-angular` for Angular UI work. Target the latest stable Angular release, not a pinned old major, unless the user explicitly asks for a specific version.
-- Use `taskmindai-api` for NestJS API work.
+- Use `taskmindai-angular` and `.agents/skills/angular-developer` for Angular UI work. Target the latest stable Angular release, not a pinned old major, unless the user explicitly asks for a specific version.
+- Use `taskmindai-api` and `.agents/skills/nestjs-best-practices` for NestJS API work.
 - Use `taskmindai-prisma` for database and Prisma work.
 - Use `taskmindai-docker` for Docker Compose and container work.
 - Use `taskmindai-ai-service` for future FastAPI/Ollama/RAG planning or implementation.
@@ -62,6 +62,8 @@ Current code is boilerplate and may be replaced as the repo evolves. Do not pres
 - Write readable code before clever abstractions.
 - Implement incrementally with small focused components, services, DTOs, and modules.
 - Keep folder boundaries explicit and feature-first.
+- In Angular features, every component must live in its own folder with its `.component.ts`, `.component.html`, and `.component.scss` files together. Do not place multiple component files flat at the feature root.
+- In Angular UI code, avoid manual `subscribe()` calls. Prefer Angular resource APIs with signals and effects for async state. Use `subscribe()` only when the user explicitly asks for it or when a documented Angular integration has no resource/signal alternative.
 - When adding or changing NestJS APIs in `apps/api`, add or update Swagger decorators, request DTO metadata, and response DTO documentation in the same change so `/api/docs` stays accurate.
 - Avoid premature reusable frameworks, broad platform abstractions, and enterprise patterns before the MVP needs them.
 - Use Nx generators for scaffolding, Nx targets for validation, and shared libraries only when code is truly shared.

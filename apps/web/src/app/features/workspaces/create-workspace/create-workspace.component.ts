@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, Injector, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -7,11 +7,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { StudioType } from '@task-mind/shared';
-import { WorkspaceService } from './workspace.service';
+import { StudioType, type CreateWorkspaceRequest } from '@task-mind/shared';
+import { WorkspaceService } from '../workspace.service';
 
 @Component({
-  selector: 'app-create-workspace-page',
+  selector: 'app-create-workspace',
   imports: [
     ReactiveFormsModule,
     RouterLink,
@@ -22,17 +22,30 @@ import { WorkspaceService } from './workspace.service';
     MatInputModule,
     MatSelectModule,
   ],
-  templateUrl: './create-workspace.page.html',
-  styleUrl: './create-workspace.page.scss',
+  templateUrl: './create-workspace.component.html',
+  styleUrl: './create-workspace.component.scss',
 })
-export class CreateWorkspacePage {
+export class CreateWorkspaceComponent {
   private readonly formBuilder = inject(FormBuilder);
+  private readonly injector = inject(Injector);
   private readonly router = inject(Router);
   private readonly workspaceService = inject(WorkspaceService);
 
   protected readonly studioTypes = [StudioType.DOCUMENT];
-  protected readonly isSaving = signal(false);
-  protected readonly errorMessage = signal('');
+  protected readonly workspaceRequest = signal<CreateWorkspaceRequest | null>(
+    null,
+  );
+  protected readonly createWorkspaceResource =
+    this.workspaceService.createWorkspaceResource(
+      this.workspaceRequest,
+      this.injector,
+    );
+  protected readonly isSaving = this.createWorkspaceResource.isLoading;
+  protected readonly errorMessage = computed(() =>
+    this.createWorkspaceResource.error()
+      ? 'Workspace could not be created.'
+      : '',
+  );
 
   protected readonly workspaceForm = this.formBuilder.nonNullable.group({
     name: ['', Validators.required],
@@ -40,23 +53,22 @@ export class CreateWorkspacePage {
     studioType: [StudioType.DOCUMENT, Validators.required],
   });
 
+  constructor() {
+    effect(() => {
+      const createdWorkspace = this.createWorkspaceResource.value();
+
+      if (createdWorkspace) {
+        void this.router.navigate(['/workspaces', createdWorkspace.id]);
+      }
+    });
+  }
+
   protected createWorkspace(): void {
     if (this.workspaceForm.invalid) {
       this.workspaceForm.markAllAsTouched();
       return;
     }
 
-    this.isSaving.set(true);
-    this.errorMessage.set('');
-
-    this.workspaceService.createWorkspace(this.workspaceForm.getRawValue()).subscribe({
-      next: (workspace) => {
-        void this.router.navigate(['/workspaces', workspace.id]);
-      },
-      error: () => {
-        this.errorMessage.set('Workspace could not be created.');
-        this.isSaving.set(false);
-      },
-    });
+    this.workspaceRequest.set(this.workspaceForm.getRawValue());
   }
 }

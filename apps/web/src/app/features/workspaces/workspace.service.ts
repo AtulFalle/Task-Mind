@@ -1,21 +1,45 @@
-import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import { Injectable, type Injector, type Signal } from '@angular/core';
 import type { CreateWorkspaceRequest, Workspace } from '@task-mind/shared';
 
 @Injectable({ providedIn: 'root' })
 export class WorkspaceService {
-  private readonly http = inject(HttpClient);
   private readonly apiUrl = '/api/workspaces';
 
-  createWorkspace(workspace: CreateWorkspaceRequest) {
-    return this.http.post<Workspace>(this.apiUrl, workspace);
+  getWorkspacesResource(injector: Injector) {
+    return httpResource<Workspace[]>(() => this.apiUrl, {
+      defaultValue: [],
+      injector,
+    });
   }
 
-  getWorkspaces() {
-    return this.http.get<Workspace[]>(this.apiUrl);
+  getWorkspaceResource(workspaceId: Signal<string | null>, injector: Injector) {
+    return httpResource<Workspace>(
+      () => {
+        const id = workspaceId();
+        return id ? `${this.apiUrl}/${id}` : undefined;
+      },
+      { injector },
+    );
   }
 
-  getWorkspace(workspaceId: string) {
-    return this.http.get<Workspace>(`${this.apiUrl}/${workspaceId}`);
+  createWorkspaceResource(
+    workspaceRequest: Signal<CreateWorkspaceRequest | null>,
+    injector: Injector,
+  ) {
+    return httpResource<Workspace>(
+      () => {
+        const request = workspaceRequest();
+
+        return request
+          ? {
+              body: request,
+              method: 'POST',
+              url: this.apiUrl,
+            }
+          : undefined;
+      },
+      { injector },
+    );
   }
 }
