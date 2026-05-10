@@ -8,6 +8,8 @@
     "start": "node node_modules/nx/dist/bin/nx.js serve web",
     "start:web": "node node_modules/nx/dist/bin/nx.js serve web",
     "start:api": "node node_modules/nx/dist/bin/nx.js serve api",
+    "start:ai": "\".\\apps\\ai\\.venv\\Scripts\\python.exe\" -m uvicorn app.main:app --app-dir apps/ai --host 127.0.0.1 --port 8001",
+    "start:dev:deps": "docker compose -f docker-compose.dev.yml up postgres redis ai",
     "build": "node node_modules/nx/dist/bin/nx.js run-many -t build --projects=web,api",
     "build:web": "node node_modules/nx/dist/bin/nx.js build web",
     "build:api": "node node_modules/nx/dist/bin/nx.js build api",

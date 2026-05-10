@@ -7,6 +7,8 @@ out-tsc
 
 # dependencies
 node_modules
+.venv
+apps/ai/.venv
 
 # IDEs and editors
 /.idea
@@ -53,3 +55,4 @@ __screenshots__/
 
 /storage/documents/*
 !/storage/documents/.gitkeep
+__pycache__/
