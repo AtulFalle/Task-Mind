@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum StudioType {
+  DOCUMENT
+}
+
+enum DocumentStatus {
+  UPLOADED
+  PARSING_PENDING
+  PARSED
+  FAILED
+}
+
+enum ExtractedTextStatus {
+  NOT_STARTED
+  PROCESSING
+  COMPLETED
+  FAILED
+  UNSUPPORTED
+}
+
+enum RuleCategory {
+  EXTRACTION
+  APPLICABILITY
+  FORMAT
+  VALIDATION
+  OTHER
+}
+
+enum RuleSource {
+  HUMAN
+  AI_SUGGESTED
+  SYSTEM
+}
+
+enum FeedbackEventType {
+  ANNOTATION_CREATED
+  ANNOTATION_UPDATED
+  ANNOTATION_DELETED
+  RULE_CREATED
+  RULE_DELETED
+  DOCUMENT_UPLOADED
+  TEXT_EXTRACTED
+  CORRECTION_ADDED
+}
+
+model Workspace {
+  id               String            @id @default(uuid())
+  name             String
+  description      String?
+  studioType       StudioType
+  documents        Document[]
+  annotations      Annotation[]
+  operationalRules OperationalRule[]
+  feedbackEvents   FeedbackEvent[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([createdAt])
+}
+
+model Document {
+  id                  String              @id @default(uuid())
+  workspaceId         String
+  workspace           Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  originalName        String
+  fileName            String
+  mimeType            String
+  size                Int
+  filePath            String
+  status              DocumentStatus
+  extractedText       String?
+  extractedTextStatus ExtractedTextStatus @default(NOT_STARTED)
+  extractionError     String?
+  annotations         Annotation[]
+  feedbackEvents      FeedbackEvent[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@index([workspaceId, createdAt])
+}
+
+model Annotation {
+  id             String          @id @default(uuid())
+  workspaceId    String
+  workspace      Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  documentId     String
+  document       Document        @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  feedbackEvents FeedbackEvent[]
+  fieldName      String
+  selectedText   String          @db.Text
+  explanation    String?         @db.Text
+  startOffset    Int?
+  endOffset      Int?
+  contextBefore  String?         @db.Text
+  contextAfter   String?         @db.Text
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([workspaceId, createdAt])
+  @@index([documentId, createdAt])
+}
+
+model OperationalRule {
+  id          String       @id @default(uuid())
+  workspaceId String
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  title       String
+  ruleText    String       @db.Text
+  category    RuleCategory
+  source      RuleSource   @default(HUMAN)
+  confidence  Float        @default(1)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([workspaceId, createdAt])
+}
+
+model FeedbackEvent {
+  id           String            @id @default(uuid())
+  workspaceId  String
+  workspace    Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  documentId   String?
+  document     Document?         @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  annotationId String?
+  annotation   Annotation?       @relation(fields: [annotationId], references: [id], onDelete: SetNull)
+  eventType    FeedbackEventType
+  payloadJson  Json
+  createdAt    DateTime          @default(now())
+
+  @@index([workspaceId, createdAt])
+  @@index([documentId, createdAt])
+  @@index([annotationId, createdAt])
+}

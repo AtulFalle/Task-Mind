@@ -23,16 +23,24 @@
         ></app-document-list>
       </div>
 
-      <app-operational-rules-panel
-        [rules]="rules()"
-        [isLoading]="rulesResource.isLoading()"
-        [isSaving]="isSavingRule()"
-        [errorMessage]="rulesErrorMessage()"
-        [saveErrorMessage]="ruleSaveError()"
-        [deletingRuleId]="deletingRuleId()"
-        (createRule)="createRule($event)"
-        (deleteRule)="deleteRule($event)"
-      ></app-operational-rules-panel>
+      <div class="document-studio__workspace-side">
+        <app-operational-rules-panel
+          [rules]="rules()"
+          [isLoading]="rulesResource.isLoading()"
+          [isSaving]="isSavingRule()"
+          [errorMessage]="rulesErrorMessage()"
+          [saveErrorMessage]="ruleSaveError()"
+          [deletingRuleId]="deletingRuleId()"
+          (createRule)="createRule($event)"
+          (deleteRule)="deleteRule($event)"
+        ></app-operational-rules-panel>
+
+        <app-teaching-memory-panel
+          [events]="feedbackEvents()"
+          [isLoading]="feedbackEventsResource.isLoading()"
+          [errorMessage]="feedbackEventsErrorMessage()"
+        ></app-teaching-memory-panel>
+      </div>
     </div>
   }
 </section>

@@ -4,10 +4,19 @@ import { AppService } from './app.service';
 import { DocumentsModule } from '../documents/documents.module';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { AnnotationsModule } from '../annotations/annotations.module';
+import { FeedbackModule } from '../feedback/feedback.module';
+import { PrismaModule } from '../prisma/prisma.module';
 import { RulesModule } from '../rules/rules.module';
 
 @Module({
-  imports: [WorkspacesModule, DocumentsModule, AnnotationsModule, RulesModule],
+  imports: [
+    PrismaModule,
+    WorkspacesModule,
+    DocumentsModule,
+    AnnotationsModule,
+    RulesModule,
+    FeedbackModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -3,6 +3,7 @@ import { Injectable, inject, type Injector, type Signal } from '@angular/core';
 import type {
   CreateOperationalRuleRequest,
   CreateWorkspaceRequest,
+  FeedbackEvent,
   OperationalRule,
   UpdateWorkspaceRequest,
   Workspace,
@@ -69,6 +70,19 @@ export class WorkspaceService {
     );
   }
 
+  getWorkspaceFeedbackEvents(
+    workspaceId: Signal<string | null>,
+    injector: Injector,
+  ) {
+    return httpResource<FeedbackEvent[]>(
+      () => {
+        const id = workspaceId();
+        return id ? `${this.apiUrl}/${id}/feedback-events` : undefined;
+      },
+      { defaultValue: [], injector },
+    );
+  }
+
   createRule(
     workspaceId: string,
     payload: CreateOperationalRuleRequest,
@@ -78,6 +92,12 @@ export class WorkspaceService {
         `${this.apiUrl}/${workspaceId}/rules`,
         payload,
       ),
+    );
+  }
+
+  getRule(ruleId: string): Promise<OperationalRule> {
+    return firstValueFrom(
+      this.httpClient.get<OperationalRule>(`/api/rules/${ruleId}`),
     );
   }
 

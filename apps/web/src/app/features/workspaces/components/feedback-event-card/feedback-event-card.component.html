@@ -1,0 +1,16 @@
+<article class="feedback-event-card">
+  <div class="feedback-event-card__marker" aria-hidden="true">
+    <mat-icon>{{ icon() }}</mat-icon>
+  </div>
+
+  <div class="feedback-event-card__body">
+    <div class="feedback-event-card__header">
+      <h3>{{ title() }}</h3>
+      <time [attr.datetime]="event().createdAt">
+        {{ event().createdAt | date: 'medium' }}
+      </time>
+    </div>
+
+    <p>{{ description() }}</p>
+  </div>
+</article>

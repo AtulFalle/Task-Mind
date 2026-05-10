@@ -1,23 +1,28 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   RuleSource,
   type CreateOperationalRuleRequest,
   type OperationalRule,
 } from '@task-mind/shared';
-import { randomUUID } from 'node:crypto';
+import { PrismaService } from '../prisma/prisma.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 
 @Injectable()
 export class RulesService {
-  private readonly rules = new Map<string, OperationalRule>();
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly workspacesService: WorkspacesService,
+  ) {}
 
-  constructor(private readonly workspacesService: WorkspacesService) {}
-
-  create(
+  async create(
     workspaceId: string,
     createRule: CreateOperationalRuleRequest,
-  ): OperationalRule {
-    const workspace = this.workspacesService.findOne(workspaceId);
+  ): Promise<OperationalRule> {
+    const workspace = await this.workspacesService.findOne(workspaceId);
     const title = createRule.title.trim();
     const ruleText = createRule.ruleText.trim();
 
@@ -29,35 +34,101 @@ export class RulesService {
       throw new BadRequestException('Rule text is required.');
     }
 
-    const now = new Date().toISOString();
-    const rule: OperationalRule = {
-      id: randomUUID(),
-      workspaceId: workspace.id,
-      title,
-      ruleText,
-      category: createRule.category,
-      source: RuleSource.HUMAN,
-      confidence: 1,
-      createdAt: now,
-      updatedAt: now,
-    };
+    const rule = await this.prisma.operationalRule.create({
+      data: {
+        workspaceId: workspace.id,
+        title,
+        ruleText,
+        category: createRule.category,
+        source: RuleSource.HUMAN,
+        confidence: 1,
+      },
+    });
 
-    this.rules.set(rule.id, rule);
+    await this.prisma.feedbackEvent.create({
+      data: {
+        workspaceId: workspace.id,
+        eventType: 'RULE_CREATED',
+        payloadJson: {
+          ruleId: rule.id,
+          title: rule.title,
+          category: rule.category,
+        },
+      },
+    });
 
-    return rule;
+    return this.toOperationalRule(rule);
   }
 
-  findByWorkspace(workspaceId: string): OperationalRule[] {
-    this.workspacesService.findOne(workspaceId);
+  async findByWorkspace(workspaceId: string): Promise<OperationalRule[]> {
+    await this.workspacesService.findOne(workspaceId);
 
-    return Array.from(this.rules.values())
-      .filter((rule) => rule.workspaceId === workspaceId)
-      .sort((first, second) => second.createdAt.localeCompare(first.createdAt));
+    const rules = await this.prisma.operationalRule.findMany({
+      where: { workspaceId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return rules.map((rule) => this.toOperationalRule(rule));
   }
 
-  remove(ruleId: string): void {
-    if (!this.rules.delete(ruleId)) {
+  async findOne(ruleId: string): Promise<OperationalRule> {
+    const rule = await this.prisma.operationalRule.findUnique({
+      where: { id: ruleId },
+    });
+
+    if (!rule) {
       throw new NotFoundException(`Rule ${ruleId} was not found.`);
     }
+
+    return this.toOperationalRule(rule);
+  }
+
+  async remove(ruleId: string): Promise<void> {
+    const rule = await this.prisma.operationalRule.findUnique({
+      where: { id: ruleId },
+    });
+
+    if (!rule) {
+      throw new NotFoundException(`Rule ${ruleId} was not found.`);
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.feedbackEvent.create({
+        data: {
+          workspaceId: rule.workspaceId,
+          eventType: 'RULE_DELETED',
+          payloadJson: {
+            ruleId: rule.id,
+            title: rule.title,
+            category: rule.category,
+          },
+        },
+      }),
+      this.prisma.operationalRule.delete({ where: { id: ruleId } }),
+    ]);
+  }
+
+  private toOperationalRule(rule: {
+    id: string;
+    workspaceId: string;
+    title: string;
+    ruleText: string;
+    category: OperationalRule['category'];
+    source: OperationalRule['source'];
+    confidence: number;
+    createdAt: Date;
+    updatedAt: Date;
+  }): OperationalRule {
+    return {
+      id: rule.id,
+      workspaceId: rule.workspaceId,
+      title: rule.title,
+      ruleText: rule.ruleText,
+      category: rule.category,
+      source: rule.source,
+      confidence: rule.confidence,
+      createdAt: rule.createdAt.toISOString(),
+      updatedAt: rule.updatedAt.toISOString(),
+    };
   }
 }

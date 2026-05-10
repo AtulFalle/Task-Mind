@@ -74,6 +74,8 @@ export interface Annotation {
   explanation?: string;
   startOffset?: number;
   endOffset?: number;
+  contextBefore?: string;
+  contextAfter?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -122,4 +124,28 @@ export interface CreateOperationalRuleRequest {
   title: string;
   ruleText: string;
   category: RuleCategory;
+}
+
+export const FeedbackEventType = {
+  ANNOTATION_CREATED: 'ANNOTATION_CREATED',
+  ANNOTATION_UPDATED: 'ANNOTATION_UPDATED',
+  ANNOTATION_DELETED: 'ANNOTATION_DELETED',
+  RULE_CREATED: 'RULE_CREATED',
+  RULE_DELETED: 'RULE_DELETED',
+  DOCUMENT_UPLOADED: 'DOCUMENT_UPLOADED',
+  TEXT_EXTRACTED: 'TEXT_EXTRACTED',
+  CORRECTION_ADDED: 'CORRECTION_ADDED',
+} as const;
+
+export type FeedbackEventType =
+  (typeof FeedbackEventType)[keyof typeof FeedbackEventType];
+
+export interface FeedbackEvent {
+  id: string;
+  workspaceId: string;
+  documentId?: string;
+  annotationId?: string;
+  eventType: FeedbackEventType;
+  payloadJson: Record<string, unknown>;
+  createdAt: string;
 }

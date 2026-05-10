@@ -113,7 +113,9 @@ export class DocumentsController {
     isArray: true,
   })
   @ApiNotFoundResponse({ description: 'Workspace was not found.' })
-  findByWorkspace(@Param('workspaceId') workspaceId: string): Document[] {
+  findByWorkspace(
+    @Param('workspaceId') workspaceId: string,
+  ): Promise<Document[]> {
     return this.documentsService.findByWorkspace(workspaceId);
   }
 
@@ -129,7 +131,9 @@ export class DocumentsController {
     type: DocumentTextDto,
   })
   @ApiNotFoundResponse({ description: 'Document was not found.' })
-  getText(@Param('documentId') documentId: string): DocumentTextResponse {
+  getText(
+    @Param('documentId') documentId: string,
+  ): Promise<DocumentTextResponse> {
     return this.documentsService.getText(documentId);
   }
 
@@ -145,7 +149,7 @@ export class DocumentsController {
     type: DocumentDto,
   })
   @ApiNotFoundResponse({ description: 'Document was not found.' })
-  findOne(@Param('documentId') documentId: string): Document {
+  findOne(@Param('documentId') documentId: string): Promise<Document> {
     return this.documentsService.findOne(documentId);
   }
 }

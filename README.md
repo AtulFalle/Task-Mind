@@ -31,3 +31,38 @@ node node_modules/nx/dist/bin/nx.js lint api
 ```
 
 `npm exec nx ...` is preferred when the local npm shim is working.
+
+## Local Persistence
+
+TaskMindAI uses Prisma with PostgreSQL for core MVP data: workspaces, documents, extracted text, annotations, operational rules, and feedback events.
+
+1. Copy `.env.example` to `.env` and keep the default local URL unless you changed the database credentials.
+
+```sh
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/taskmindai?schema=public"
+```
+
+2. Start the local database:
+
+```sh
+docker compose -f docker-compose.dev.yml up -d postgres
+```
+
+3. Generate Prisma Client:
+
+```sh
+node node_modules/prisma/build/index.js generate
+```
+
+4. Apply migrations:
+
+```sh
+node node_modules/prisma/build/index.js migrate dev --name init_taskmind_core
+```
+
+5. Start the API and web app:
+
+```sh
+node node_modules/nx/dist/bin/nx.js serve api
+node node_modules/nx/dist/bin/nx.js serve web
+```
