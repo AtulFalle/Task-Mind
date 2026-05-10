@@ -2,6 +2,7 @@ import {
   Component,
   ElementRef,
   computed,
+  effect,
   inject,
   input,
   output,
@@ -15,6 +16,7 @@ import {
   ExtractedTextStatus,
   type Annotation,
   type CreateAnnotationRequest,
+  type UpdateAnnotationRequest,
 } from '@task-mind/shared';
 import { AnnotationFormComponent } from '../annotation-form/annotation-form.component';
 import type {
@@ -25,10 +27,10 @@ import type {
 
 interface AnnotationEditRequest {
   annotationId: string;
-  payload: CreateAnnotationRequest;
+  payload: UpdateAnnotationRequest;
 }
 
-interface OffsetAnnotation extends Annotation {
+interface ResolvedAnnotation extends Annotation {
   startOffset: number;
   endOffset: number;
 }
@@ -55,12 +57,14 @@ export class DocumentTextViewerComponent {
   readonly error = input<string | null>(null);
   readonly annotations = input<Annotation[]>([]);
   readonly activeAnnotationId = input<string | null>(null);
+  readonly showSelectionPopover = input(true);
   readonly isSavingAnnotation = input(false);
   readonly annotationErrorMessage = input('');
   readonly saveAnnotation = output<CreateAnnotationRequest>();
   readonly updateAnnotation = output<AnnotationEditRequest>();
   readonly deleteAnnotation = output<string>();
   readonly annotationSelected = output<string>();
+  readonly textSelected = output<SelectedDocumentText>();
 
   protected readonly pendingSelection = signal<SelectedDocumentText | null>(
     null,
@@ -86,6 +90,18 @@ export class DocumentTextViewerComponent {
 
     return 'No extracted text is available for this document.';
   });
+
+  constructor() {
+    effect(() => {
+      const activeAnnotationId = this.activeAnnotationId();
+
+      if (!activeAnnotationId) {
+        return;
+      }
+
+      queueMicrotask(() => this.scrollAnnotationIntoView(activeAnnotationId));
+    });
+  }
 
   protected captureSelection(): void {
     const selection = globalThis.getSelection?.();
@@ -123,12 +139,22 @@ export class DocumentTextViewerComponent {
       startOffset,
       endOffset,
     });
+    this.textSelected.emit({
+      text: selectedText,
+      startOffset,
+      endOffset,
+    });
     this.selectedAnnotation.set(null);
     this.isEditingAnnotation.set(false);
-    this.popoverPosition.set({
-      left: rangeRect.left - hostRect.left,
-      top: rangeRect.bottom - hostRect.top + 10,
-    });
+
+    if (this.showSelectionPopover()) {
+      this.popoverPosition.set({
+        left: rangeRect.left - hostRect.left,
+        top: rangeRect.bottom - hostRect.top + 10,
+      });
+    } else {
+      this.popoverPosition.set(null);
+    }
   }
 
   protected submitAnnotation(payload: CreateAnnotationRequest): void {
@@ -144,7 +170,13 @@ export class DocumentTextViewerComponent {
     const annotation = this.selectedAnnotation();
 
     if (annotation) {
-      this.updateAnnotation.emit({ annotationId: annotation.id, payload });
+      this.updateAnnotation.emit({
+        annotationId: annotation.id,
+        payload: {
+          fieldName: payload.fieldName,
+          explanation: payload.explanation,
+        },
+      });
       this.cancelPopover();
     }
   }
@@ -196,7 +228,9 @@ export class DocumentTextViewerComponent {
     }
   }
 
-  protected segmentAnnotation(segment: AnnotationTextSegment): Annotation | null {
+  protected segmentAnnotation(
+    segment: AnnotationTextSegment,
+  ): Annotation | null {
     if (!segment.annotationId) {
       return null;
     }
@@ -208,30 +242,28 @@ export class DocumentTextViewerComponent {
     );
   }
 
+  private scrollAnnotationIntoView(annotationId: string): void {
+    const annotationElement = Array.from(
+      this.hostElement.nativeElement.querySelectorAll<HTMLElement>(
+        '[data-annotation-id]',
+      ),
+    ).find((element) => element.dataset['annotationId'] === annotationId);
+
+    annotationElement?.scrollIntoView({
+      block: 'center',
+      inline: 'nearest',
+      behavior: 'smooth',
+    });
+  }
+
   private buildTextSegments(
     text: string,
     annotations: Annotation[],
   ): AnnotationTextSegment[] {
     const sortedAnnotations = annotations
-      .map((annotation): OffsetAnnotation | null => {
-        if (
-          annotation.startOffset === undefined ||
-          annotation.endOffset === undefined ||
-          annotation.startOffset < 0 ||
-          annotation.endOffset <= annotation.startOffset ||
-          annotation.endOffset > text.length
-        ) {
-          return null;
-        }
-
-        return {
-          ...annotation,
-          startOffset: annotation.startOffset,
-          endOffset: annotation.endOffset,
-        };
-      })
+      .map((annotation) => this.resolveAnnotationRange(text, annotation))
       .filter(
-        (annotation): annotation is OffsetAnnotation => annotation !== null,
+        (annotation): annotation is ResolvedAnnotation => annotation !== null,
       )
       .sort((first, second) => first.startOffset - second.startOffset);
 
@@ -269,5 +301,36 @@ export class DocumentTextViewerComponent {
     }
 
     return segments.length ? segments : [{ id: 'text-full', text }];
+  }
+
+  private resolveAnnotationRange(
+    text: string,
+    annotation: Annotation,
+  ): ResolvedAnnotation | null {
+    if (
+      annotation.startOffset !== undefined &&
+      annotation.endOffset !== undefined &&
+      annotation.startOffset >= 0 &&
+      annotation.endOffset > annotation.startOffset &&
+      annotation.endOffset <= text.length
+    ) {
+      return {
+        ...annotation,
+        startOffset: annotation.startOffset,
+        endOffset: annotation.endOffset,
+      };
+    }
+
+    const startOffset = text.indexOf(annotation.selectedText);
+
+    if (startOffset < 0) {
+      return null;
+    }
+
+    return {
+      ...annotation,
+      startOffset,
+      endOffset: startOffset + annotation.selectedText.length,
+    };
   }
 }

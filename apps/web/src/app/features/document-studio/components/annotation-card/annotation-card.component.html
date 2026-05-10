@@ -10,9 +10,26 @@
   <div class="annotation-card__header">
     <div>
       <h3>{{ annotation().fieldName }}</h3>
-      <p>{{ annotation().createdAt | date: 'medium' }}</p>
+      <p>
+        @if (annotation().updatedAt !== annotation().createdAt) {
+          Updated {{ annotation().updatedAt | date: 'medium' }}
+        } @else {
+          Saved {{ annotation().createdAt | date: 'medium' }}
+        }
+      </p>
     </div>
     <div class="annotation-card__tools">
+      <button
+        mat-icon-button
+        type="button"
+        aria-label="Create training candidate"
+        (click)="
+          createTrainingCandidate.emit(annotation().id);
+          $event.stopPropagation()
+        "
+      >
+        <mat-icon aria-hidden="true">school</mat-icon>
+      </button>
       <button
         mat-icon-button
         type="button"
@@ -44,4 +61,53 @@
       <p>{{ annotation().explanation }}</p>
     </div>
   }
+
+  <section class="annotation-card__rules" aria-label="Linked operational rules">
+    <div class="annotation-card__rules-header">
+      <span>Linked rules</span>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Link rule</mat-label>
+        <mat-select
+          [disabled]="isLinkingRule() || availableRules().length === 0"
+          (keydown.enter)="$event.stopPropagation()"
+          (keydown.space)="$event.stopPropagation()"
+          (selectionChange)="
+            linkRule.emit({
+              annotationId: annotation().id,
+              ruleId: $event.value
+            })
+          "
+        >
+          @for (rule of availableRules(); track rule.id) {
+            <mat-option [value]="rule.id">{{ rule.title }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    @if (linkedRules().length > 0) {
+      <mat-chip-set aria-label="Rules linked to this annotation">
+        @for (rule of linkedRules(); track rule.linkId) {
+          <mat-chip-row
+            [removable]="true"
+            (removed)="
+              unlinkRule.emit({
+                annotationId: annotation().id,
+                ruleId: rule.id
+              })
+            "
+          >
+            {{ rule.title }}
+            <button matChipRemove type="button" [attr.aria-label]="'Unlink ' + rule.title">
+              <mat-icon aria-hidden="true">cancel</mat-icon>
+            </button>
+          </mat-chip-row>
+        }
+      </mat-chip-set>
+    } @else {
+      <p class="annotation-card__rules-empty">
+        No rules linked to this annotation yet.
+      </p>
+    }
+  </section>
 </article>

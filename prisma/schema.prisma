@@ -43,24 +43,46 @@ enum FeedbackEventType {
   ANNOTATION_CREATED
   ANNOTATION_UPDATED
   ANNOTATION_DELETED
+  ANNOTATION_RULE_LINKED
+  ANNOTATION_RULE_UNLINKED
   RULE_CREATED
   RULE_DELETED
   DOCUMENT_UPLOADED
   TEXT_EXTRACTED
   CORRECTION_ADDED
+  TRAINING_CANDIDATE_CREATED
+  TRAINING_CANDIDATE_APPROVED
+  TRAINING_CANDIDATE_REJECTED
+}
+
+enum TrainingCandidateType {
+  EXTRACTION
+  APPLICABILITY_REJECTION
+  FORMAT_CORRECTION
+  VALIDATION_RULE
+  OTHER
+}
+
+enum TrainingCandidateStatus {
+  DRAFT
+  REVIEWED
+  APPROVED
+  REJECTED
 }
 
 model Workspace {
-  id               String            @id @default(uuid())
-  name             String
-  description      String?
-  studioType       StudioType
-  documents        Document[]
-  annotations      Annotation[]
-  operationalRules OperationalRule[]
-  feedbackEvents   FeedbackEvent[]
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  id                 String               @id @default(uuid())
+  name               String
+  description        String?
+  studioType         StudioType
+  documents          Document[]
+  annotations        Annotation[]
+  operationalRules   OperationalRule[]
+  annotationLinks    AnnotationRuleLink[]
+  trainingCandidates TrainingCandidate[]
+  feedbackEvents     FeedbackEvent[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 
   @@index([createdAt])
 }
@@ -79,6 +101,7 @@ model Document {
   extractedTextStatus ExtractedTextStatus @default(NOT_STARTED)
   extractionError     String?
   annotations         Annotation[]
+  trainingCandidates  TrainingCandidate[]
   feedbackEvents      FeedbackEvent[]
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
@@ -87,39 +110,81 @@ model Document {
 }
 
 model Annotation {
-  id             String          @id @default(uuid())
-  workspaceId    String
-  workspace      Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  documentId     String
-  document       Document        @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  feedbackEvents FeedbackEvent[]
-  fieldName      String
-  selectedText   String          @db.Text
-  explanation    String?         @db.Text
-  startOffset    Int?
-  endOffset      Int?
-  contextBefore  String?         @db.Text
-  contextAfter   String?         @db.Text
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  id                 String               @id @default(uuid())
+  workspaceId        String
+  workspace          Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  documentId         String
+  document           Document             @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  ruleLinks          AnnotationRuleLink[]
+  trainingCandidates TrainingCandidate[]
+  feedbackEvents     FeedbackEvent[]
+  fieldName          String
+  selectedText       String               @db.Text
+  explanation        String?              @db.Text
+  startOffset        Int?
+  endOffset          Int?
+  contextBefore      String?              @db.Text
+  contextAfter       String?              @db.Text
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 
   @@index([workspaceId, createdAt])
   @@index([documentId, createdAt])
 }
 
 model OperationalRule {
-  id          String       @id @default(uuid())
-  workspaceId String
-  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  title       String
-  ruleText    String       @db.Text
-  category    RuleCategory
-  source      RuleSource   @default(HUMAN)
-  confidence  Float        @default(1)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id              String               @id @default(uuid())
+  workspaceId     String
+  workspace       Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  annotationLinks AnnotationRuleLink[]
+  title           String
+  ruleText        String               @db.Text
+  category        RuleCategory
+  source          RuleSource           @default(HUMAN)
+  confidence      Float                @default(1)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
 
   @@index([workspaceId, createdAt])
+}
+
+model AnnotationRuleLink {
+  id           String          @id @default(uuid())
+  annotationId String
+  annotation   Annotation      @relation(fields: [annotationId], references: [id], onDelete: Cascade)
+  ruleId       String
+  rule         OperationalRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  workspaceId  String
+  workspace    Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt    DateTime        @default(now())
+
+  @@unique([annotationId, ruleId])
+  @@index([workspaceId, createdAt])
+  @@index([annotationId, createdAt])
+  @@index([ruleId, createdAt])
+}
+
+model TrainingCandidate {
+  id             String                  @id @default(uuid())
+  workspaceId    String
+  workspace      Workspace               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  documentId     String?
+  document       Document?               @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  annotationId   String?
+  annotation     Annotation?             @relation(fields: [annotationId], references: [id], onDelete: SetNull)
+  candidateType  TrainingCandidateType
+  inputText      String                  @db.Text
+  expectedOutput Json
+  instruction    String                  @db.Text
+  reasoning      String?                 @db.Text
+  status         TrainingCandidateStatus @default(DRAFT)
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+
+  @@index([workspaceId, createdAt])
+  @@index([documentId, createdAt])
+  @@index([annotationId, createdAt])
+  @@index([status, createdAt])
 }
 
 model FeedbackEvent {

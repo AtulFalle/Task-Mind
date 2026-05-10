@@ -1,0 +1,11 @@
+<div class="annotation-dialog">
+  <app-annotation-form
+    [selection]="data.selection"
+    [isSaving]="isSaving()"
+    [errorMessage]="errorMessage()"
+    title="Create annotation"
+    submitLabel="Save annotation"
+    (saveAnnotation)="saveAnnotation($event)"
+    (cancelAnnotation)="cancelAnnotation()"
+  ></app-annotation-form>
+</div>

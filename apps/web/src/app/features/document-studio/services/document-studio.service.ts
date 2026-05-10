@@ -5,6 +5,9 @@ import {
   type CreateAnnotationRequest,
   type Document,
   type DocumentTextResponse,
+  type FeedbackEvent,
+  type LinkedOperationalRule,
+  type TrainingCandidate,
   type UpdateAnnotationRequest,
 } from '@task-mind/shared';
 import { firstValueFrom } from 'rxjs';
@@ -47,11 +50,27 @@ export class DocumentStudioService {
     );
   }
 
-  getDocumentAnnotations(documentId: Signal<string | null>, injector: Injector) {
+  getDocumentAnnotations(
+    documentId: Signal<string | null>,
+    injector: Injector,
+  ) {
     return httpResource<Annotation[]>(
       () => {
         const id = documentId();
         return id ? `/api/documents/${id}/annotations` : undefined;
+      },
+      { defaultValue: [], injector },
+    );
+  }
+
+  getDocumentFeedbackEvents(
+    documentId: Signal<string | null>,
+    injector: Injector,
+  ) {
+    return httpResource<FeedbackEvent[]>(
+      () => {
+        const id = documentId();
+        return id ? `/api/documents/${id}/feedback-events` : undefined;
       },
       { defaultValue: [], injector },
     );
@@ -80,9 +99,48 @@ export class DocumentStudioService {
     payload: UpdateAnnotationRequest,
   ): Promise<Annotation> {
     return firstValueFrom(
-      this.httpClient.put<Annotation>(
+      this.httpClient.patch<Annotation>(
         `/api/annotations/${annotationId}`,
         payload,
+      ),
+    );
+  }
+
+  linkRuleToAnnotation(
+    annotationId: string,
+    ruleId: string,
+  ): Promise<LinkedOperationalRule> {
+    return firstValueFrom(
+      this.httpClient.post<LinkedOperationalRule>(
+        `/api/annotations/${annotationId}/rules/${ruleId}`,
+        {},
+      ),
+    );
+  }
+
+  unlinkRuleFromAnnotation(annotationId: string, ruleId: string): Promise<void> {
+    return firstValueFrom(
+      this.httpClient.delete<void>(
+        `/api/annotations/${annotationId}/rules/${ruleId}`,
+      ),
+    );
+  }
+
+  getAnnotationRules(annotationId: string): Promise<LinkedOperationalRule[]> {
+    return firstValueFrom(
+      this.httpClient.get<LinkedOperationalRule[]>(
+        `/api/annotations/${annotationId}/rules`,
+      ),
+    );
+  }
+
+  createTrainingCandidateFromAnnotation(
+    annotationId: string,
+  ): Promise<TrainingCandidate> {
+    return firstValueFrom(
+      this.httpClient.post<TrainingCandidate>(
+        `/api/annotations/${annotationId}/training-candidate`,
+        {},
       ),
     );
   }

@@ -1,0 +1,106 @@
+.training-candidates-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #d9e0ea;
+  border-radius: 8px;
+  background: #ffffff;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+    }
+
+    p {
+      margin-top: 0.25rem;
+      color: #526276;
+    }
+  }
+
+  &__counts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+
+    div {
+      display: grid;
+      gap: 0.2rem;
+      padding: 0.75rem;
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+
+    dt {
+      color: #526276;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    dd {
+      margin: 0;
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+  }
+
+  &__recent {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 0.75rem;
+    border-top: 1px solid #edf1f7;
+
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h3 {
+      display: -webkit-box;
+      overflow: hidden;
+      font-size: 0.95rem;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+
+    p {
+      margin-top: 0.25rem;
+      color: #526276;
+      font-size: 0.8rem;
+    }
+  }
+
+  &__state {
+    display: grid;
+    place-items: center;
+    min-height: 7rem;
+    color: #526276;
+    text-align: center;
+  }
+
+  &__error {
+    margin: 0;
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: #fdecec;
+    color: #8a1c1c;
+  }
+}

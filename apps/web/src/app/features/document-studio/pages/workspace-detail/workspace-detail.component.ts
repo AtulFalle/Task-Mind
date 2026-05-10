@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import type { CreateOperationalRuleRequest } from '@task-mind/shared';
 import { OperationalRulesPanelComponent } from '../../../workspaces/components/operational-rules-panel/operational-rules-panel.component';
 import { TeachingMemoryPanelComponent } from '../../../workspaces/components/teaching-memory-panel/teaching-memory-panel.component';
+import { TrainingCandidatesPanelComponent } from '../../../workspaces/components/training-candidates-panel/training-candidates-panel.component';
 import { WorkspaceService } from '../../../workspaces/workspace.service';
 import { DocumentListComponent } from '../../components/document-list/document-list.component';
 import { DocumentUploadComponent } from '../../components/document-upload/document-upload.component';
@@ -18,6 +19,7 @@ import { DocumentStudioService } from '../../services/document-studio.service';
     DocumentUploadComponent,
     DocumentListComponent,
     OperationalRulesPanelComponent,
+    TrainingCandidatesPanelComponent,
     TeachingMemoryPanelComponent,
   ],
   templateUrl: './workspace-detail.component.html',
@@ -60,7 +62,13 @@ export class WorkspaceDetailComponent {
       this.workspaceId,
       this.injector,
     );
+  protected readonly trainingCandidatesResource =
+    this.workspaceService.getWorkspaceTrainingCandidates(
+      this.workspaceId,
+      this.injector,
+    );
   protected readonly feedbackEvents = this.feedbackEventsResource.value;
+  protected readonly trainingCandidates = this.trainingCandidatesResource.value;
   protected readonly isSavingRule = signal(false);
   protected readonly ruleSaveError = signal('');
   protected readonly deletingRuleId = signal<string | null>(null);
@@ -73,6 +81,11 @@ export class WorkspaceDetailComponent {
   protected readonly feedbackEventsErrorMessage = computed(() =>
     this.feedbackEventsResource.error()
       ? 'Teaching memory could not be loaded.'
+      : '',
+  );
+  protected readonly trainingCandidatesErrorMessage = computed(() =>
+    this.trainingCandidatesResource.error()
+      ? 'Training candidates could not be loaded.'
       : '',
   );
   protected readonly handleDocumentUploaded = () => {

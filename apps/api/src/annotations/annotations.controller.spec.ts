@@ -99,7 +99,7 @@ describe('AnnotationsController', () => {
     expect(annotationsService.remove).toHaveBeenCalledWith('annotation-1');
   });
 
-  it('routes PUT /api/annotations/:annotationId to annotation update', async () => {
+  it('routes PATCH /api/annotations/:annotationId to annotation update', async () => {
     annotationsService.update.mockReturnValue({
       id: 'annotation-1',
       documentId: 'document-1',
@@ -115,10 +115,10 @@ describe('AnnotationsController', () => {
       {
         body: JSON.stringify({
           fieldName: 'totalAmount',
-          selectedText: '$245.00',
+          explanation: 'This is the invoice total.',
         }),
         headers: { 'content-type': 'application/json' },
-        method: 'PUT',
+        method: 'PATCH',
       },
     );
 
@@ -130,7 +130,7 @@ describe('AnnotationsController', () => {
     });
     expect(annotationsService.update).toHaveBeenCalledWith('annotation-1', {
       fieldName: 'totalAmount',
-      selectedText: '$245.00',
+      explanation: 'This is the invoice total.',
     });
   });
 });

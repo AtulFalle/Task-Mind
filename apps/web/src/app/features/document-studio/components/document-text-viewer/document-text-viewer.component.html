@@ -28,16 +28,24 @@
     >
       @for (segment of textSegments(); track segment.id) {
         @if (segmentAnnotation(segment); as annotation) {
-          <button
-            class="document-text-viewer__annotation"
-            [class.document-text-viewer__annotation--active]="
+          <span
+            class="document-text-viewer__annotation-text"
+            [class.document-text-viewer__annotation-text--active]="
+              activeAnnotationId() === annotation.id
+            "
+            [attr.data-annotation-id]="annotation.id"
+            >{{ segment.text }}</span
+          ><button
+            class="document-text-viewer__annotation-badge"
+            [class.document-text-viewer__annotation-badge--active]="
               activeAnnotationId() === annotation.id
             "
             type="button"
-            [attr.aria-label]="'Open annotation ' + annotation.fieldName"
+            [attr.aria-label]="'Open annotation for ' + annotation.fieldName"
             [attr.data-field]="annotation.fieldName"
+            [attr.data-annotation-id]="annotation.id"
             (click)="openAnnotationPopover(annotation.id, $event)"
-          >{{ segment.text }}</button>
+          ></button>
         } @else {
           <span>{{ segment.text }}</span>
         }
@@ -51,23 +59,25 @@
         role="dialog"
         aria-label="Annotation details"
       >
-        @if (pendingSelection(); as selection) {
-          <app-annotation-form
-            [selection]="selection"
-            [isSaving]="isSavingAnnotation()"
-            [errorMessage]="annotationErrorMessage()"
-            title="Create annotation"
-            submitLabel="Save"
-            (saveAnnotation)="submitAnnotation($event)"
-            (cancelAnnotation)="cancelPopover()"
-          ></app-annotation-form>
+        @if (showSelectionPopover()) {
+          @if (pendingSelection(); as selection) {
+            <app-annotation-form
+              [selection]="selection"
+              [isSaving]="isSavingAnnotation()"
+              [errorMessage]="annotationErrorMessage()"
+              title="Create annotation"
+              submitLabel="Save"
+              (saveAnnotation)="submitAnnotation($event)"
+              (cancelAnnotation)="cancelPopover()"
+            ></app-annotation-form>
+          }
         } @else if (selectedAnnotation(); as annotation) {
           @if (isEditingAnnotation()) {
             <app-annotation-form
               [selection]="{
                 text: annotation.selectedText,
                 startOffset: annotation.startOffset,
-                endOffset: annotation.endOffset
+                endOffset: annotation.endOffset,
               }"
               [annotation]="annotation"
               [isSaving]="isSavingAnnotation()"
@@ -94,10 +104,18 @@
                 </div>
               }
               <div class="document-text-viewer__popover-actions">
-                <button mat-flat-button type="button" (click)="editSelectedAnnotation()">
+                <button
+                  mat-flat-button
+                  type="button"
+                  (click)="editSelectedAnnotation()"
+                >
                   Edit
                 </button>
-                <button mat-button type="button" (click)="deleteSelectedAnnotation()">
+                <button
+                  mat-button
+                  type="button"
+                  (click)="deleteSelectedAnnotation()"
+                >
                   Delete
                 </button>
                 <button mat-button type="button" (click)="cancelPopover()">
