@@ -53,6 +53,19 @@ enum FeedbackEventType {
   TRAINING_CANDIDATE_CREATED
   TRAINING_CANDIDATE_APPROVED
   TRAINING_CANDIDATE_REJECTED
+  AI_SUGGESTION_CREATED
+  AI_SUGGESTION_APPROVED
+  AI_SUGGESTION_REJECTED
+  AI_SUGGESTION_EDITED
+  AI_SUGGESTION_CONVERTED_TO_ANNOTATION
+}
+
+enum AiSuggestionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EDITED
+  CONVERTED_TO_ANNOTATION
 }
 
 enum TrainingCandidateType {
@@ -80,6 +93,7 @@ model Workspace {
   operationalRules   OperationalRule[]
   annotationLinks    AnnotationRuleLink[]
   trainingCandidates TrainingCandidate[]
+  aiSuggestions      AiSuggestion[]
   feedbackEvents     FeedbackEvent[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
@@ -102,6 +116,7 @@ model Document {
   extractionError     String?
   annotations         Annotation[]
   trainingCandidates  TrainingCandidate[]
+  aiSuggestions       AiSuggestion[]
   feedbackEvents      FeedbackEvent[]
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
@@ -117,6 +132,7 @@ model Annotation {
   document           Document             @relation(fields: [documentId], references: [id], onDelete: Cascade)
   ruleLinks          AnnotationRuleLink[]
   trainingCandidates TrainingCandidate[]
+  aiSuggestions      AiSuggestion[]
   feedbackEvents     FeedbackEvent[]
   fieldName          String
   selectedText       String               @db.Text
@@ -130,6 +146,30 @@ model Annotation {
 
   @@index([workspaceId, createdAt])
   @@index([documentId, createdAt])
+}
+
+model AiSuggestion {
+  id                    String             @id @default(uuid())
+  workspaceId           String
+  workspace             Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  documentId            String
+  document              Document           @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  annotationId          String?
+  annotation            Annotation?        @relation(fields: [annotationId], references: [id], onDelete: SetNull)
+  fieldName             String
+  selectedText          String             @db.Text
+  reasoning             String             @db.Text
+  confidence            Float
+  status                AiSuggestionStatus @default(PENDING)
+  correctedFieldName    String?
+  correctedSelectedText String?            @db.Text
+  correctedReasoning    String?            @db.Text
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  @@index([workspaceId, createdAt])
+  @@index([documentId, createdAt])
+  @@index([status, createdAt])
 }
 
 model OperationalRule {

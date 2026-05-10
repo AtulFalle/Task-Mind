@@ -1,0 +1,188 @@
+<section class="ai-suggestions-panel" aria-labelledby="ai-suggestions-title">
+  <div class="ai-suggestions-panel__header">
+    <div>
+      <h2 id="ai-suggestions-title">TaskMindAI suggestions</h2>
+      <p>Review model suggestions before they become teaching annotations.</p>
+    </div>
+
+    <button
+      mat-flat-button
+      type="button"
+      [disabled]="isLoading()"
+      (click)="askSuggestions.emit()"
+    >
+      @if (isLoading()) {
+        <mat-spinner diameter="18"></mat-spinner>
+      } @else {
+        <mat-icon aria-hidden="true">psychology</mat-icon>
+      }
+      Ask TaskMindAI
+    </button>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="ai-suggestions-panel__error">{{ errorMessage() }}</p>
+  }
+
+  @if (hasSuggestions()) {
+    <div class="ai-suggestions-panel__list">
+      @for (suggestion of suggestions(); track suggestion.id) {
+        <article class="ai-suggestions-panel__suggestion">
+          @if (editingSuggestionId() === suggestion.id) {
+            <div class="ai-suggestions-panel__editor">
+              <mat-form-field appearance="outline">
+                <mat-label>Field name</mat-label>
+                <input
+                  matInput
+                  type="text"
+                  [value]="draftFieldName()"
+                  (input)="updateFieldName($event)"
+                />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Selected text</mat-label>
+                <textarea
+                  matInput
+                  rows="3"
+                  [value]="draftSelectedText()"
+                  (input)="updateSelectedText($event)"
+                ></textarea>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Reasoning</mat-label>
+                <textarea
+                  matInput
+                  rows="3"
+                  [value]="draftReasoning()"
+                  (input)="updateReasoning($event)"
+                ></textarea>
+              </mat-form-field>
+
+              <div class="ai-suggestions-panel__actions">
+                <button
+                  mat-flat-button
+                  type="button"
+                  [disabled]="isRecordingFeedback()"
+                  (click)="saveEdit(suggestion.id)"
+                >
+                  Save
+                </button>
+                <button
+                  mat-button
+                  type="button"
+                  [disabled]="isRecordingFeedback()"
+                  (click)="cancelEdit()"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          } @else if (rejectingSuggestionId() === suggestion.id) {
+            <div class="ai-suggestions-panel__editor">
+              <mat-form-field appearance="outline">
+                <mat-label>Rejection reason</mat-label>
+                <textarea
+                  matInput
+                  rows="3"
+                  [value]="rejectionReason()"
+                  (input)="updateRejectionReason($event)"
+                ></textarea>
+              </mat-form-field>
+
+              <div class="ai-suggestions-panel__actions">
+                <button
+                  mat-flat-button
+                  type="button"
+                  [disabled]="isRecordingFeedback()"
+                  (click)="submitReject(suggestion.id)"
+                >
+                  Reject
+                </button>
+                <button
+                  mat-button
+                  type="button"
+                  [disabled]="isRecordingFeedback()"
+                  (click)="cancelReject()"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="ai-suggestions-panel__suggestion-header">
+              <div>
+                <h3>{{ displayFieldName(suggestion) }}</h3>
+                <p>{{ suggestion.status }}</p>
+              </div>
+              <span>{{ suggestion.confidence | percent: '1.0-0' }}</span>
+            </div>
+
+            <mat-progress-bar
+              mode="determinate"
+              [value]="suggestion.confidence * 100"
+            ></mat-progress-bar>
+
+            <div class="ai-suggestions-panel__text">
+              <span>Selected text</span>
+              <blockquote>{{ displaySelectedText(suggestion) }}</blockquote>
+            </div>
+
+            <div class="ai-suggestions-panel__reasoning">
+              <span>Reasoning</span>
+              <p>{{ displayReasoning(suggestion) }}</p>
+            </div>
+
+            <p class="ai-suggestions-panel__memory-note">
+              This feedback helps TaskMindAI improve future suggestions.
+            </p>
+
+            <div class="ai-suggestions-panel__actions">
+              <button
+                mat-button
+                type="button"
+                [disabled]="isRecordingFeedback()"
+                (click)="approveSuggestion.emit(suggestion.id)"
+              >
+                <mat-icon aria-hidden="true">thumb_up</mat-icon>
+                Approve
+              </button>
+              <button
+                mat-button
+                type="button"
+                [disabled]="isRecordingFeedback()"
+                (click)="startReject(suggestion.id)"
+              >
+                <mat-icon aria-hidden="true">thumb_down</mat-icon>
+                Reject
+              </button>
+              <button
+                mat-button
+                type="button"
+                [disabled]="isRecordingFeedback()"
+                (click)="startEdit(suggestion)"
+              >
+                <mat-icon aria-hidden="true">edit</mat-icon>
+                Correct
+              </button>
+              <button
+                mat-button
+                type="button"
+                [disabled]="isRecordingFeedback()"
+                (click)="convertSuggestion.emit(suggestion.id)"
+              >
+                <mat-icon aria-hidden="true">add_task</mat-icon>
+                Convert to annotation
+              </button>
+            </div>
+          }
+        </article>
+      }
+    </div>
+  } @else if (!isLoading()) {
+    <div class="ai-suggestions-panel__state">
+      <p>No AI suggestions loaded yet.</p>
+    </div>
+  }
+</section>

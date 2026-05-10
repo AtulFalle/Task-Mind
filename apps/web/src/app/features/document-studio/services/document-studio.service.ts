@@ -1,14 +1,18 @@
 import { HttpClient, httpResource } from '@angular/common/http';
 import { Injectable, inject, type Injector, type Signal } from '@angular/core';
 import {
+  type AiAnnotationSuggestionsResponse,
+  type AiSuggestion,
   type Annotation,
   type CreateAnnotationRequest,
   type Document,
   type DocumentTextResponse,
   type FeedbackEvent,
   type LinkedOperationalRule,
+  type RejectAiSuggestionRequest,
   type TrainingCandidate,
   type UpdateAnnotationRequest,
+  type UpdateAiSuggestionRequest,
 } from '@task-mind/shared';
 import { firstValueFrom } from 'rxjs';
 import type { UploadDocumentRequest } from '../models/document-studio.models';
@@ -88,6 +92,69 @@ export class DocumentStudioService {
     );
   }
 
+  getAiSuggestions(
+    documentId: string,
+  ): Promise<AiAnnotationSuggestionsResponse> {
+    return firstValueFrom(
+      this.httpClient.post<AiAnnotationSuggestionsResponse>(
+        `/api/documents/${documentId}/ai-suggestions`,
+        {},
+      ),
+    );
+  }
+
+  getDocumentAiSuggestions(documentId: string): Promise<AiSuggestion[]> {
+    return firstValueFrom(
+      this.httpClient.get<AiSuggestion[]>(
+        `/api/documents/${documentId}/ai-suggestions`,
+      ),
+    );
+  }
+
+  approveAiSuggestion(suggestionId: string): Promise<AiSuggestion> {
+    return firstValueFrom(
+      this.httpClient.patch<AiSuggestion>(
+        `/api/ai-suggestions/${suggestionId}/approve`,
+        {},
+      ),
+    );
+  }
+
+  rejectAiSuggestion(
+    suggestionId: string,
+    reason?: string,
+  ): Promise<AiSuggestion> {
+    const payload: RejectAiSuggestionRequest = { reason };
+
+    return firstValueFrom(
+      this.httpClient.patch<AiSuggestion>(
+        `/api/ai-suggestions/${suggestionId}/reject`,
+        payload,
+      ),
+    );
+  }
+
+  editAiSuggestion(
+    suggestionId: string,
+    payload: UpdateAiSuggestionRequest,
+  ): Promise<AiSuggestion> {
+    return firstValueFrom(
+      this.httpClient.patch<AiSuggestion>(
+        `/api/ai-suggestions/${suggestionId}/edit`,
+        payload,
+      ),
+    );
+  }
+
+  convertAiSuggestionToAnnotation(suggestionId: string): Promise<AiSuggestion> {
+    return firstValueFrom(
+      this.httpClient.post<AiSuggestion>(
+        `/api/ai-suggestions/${suggestionId}/convert-to-annotation`,
+        {},
+      ),
+    );
+  }
+
   deleteAnnotation(annotationId: string): Promise<void> {
     return firstValueFrom(
       this.httpClient.delete<void>(`/api/annotations/${annotationId}`),
@@ -118,7 +185,10 @@ export class DocumentStudioService {
     );
   }
 
-  unlinkRuleFromAnnotation(annotationId: string, ruleId: string): Promise<void> {
+  unlinkRuleFromAnnotation(
+    annotationId: string,
+    ruleId: string,
+  ): Promise<void> {
     return firstValueFrom(
       this.httpClient.delete<void>(
         `/api/annotations/${annotationId}/rules/${ruleId}`,

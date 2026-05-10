@@ -198,6 +198,51 @@ export interface UpdateTrainingCandidateRequest {
   status?: TrainingCandidateStatus;
 }
 
+export interface AiAnnotationSuggestion {
+  fieldName: string;
+  selectedText: string;
+  reasoning: string;
+  confidence: number;
+}
+
+export interface AiAnnotationSuggestionsResponse {
+  suggestions: AiSuggestion[];
+}
+
+export const AiSuggestionStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  EDITED: 'EDITED',
+  CONVERTED_TO_ANNOTATION: 'CONVERTED_TO_ANNOTATION',
+} as const;
+
+export type AiSuggestionStatus =
+  (typeof AiSuggestionStatus)[keyof typeof AiSuggestionStatus];
+
+export interface AiSuggestion extends AiAnnotationSuggestion {
+  id: string;
+  workspaceId: string;
+  documentId: string;
+  annotationId?: string;
+  status: AiSuggestionStatus;
+  correctedFieldName?: string;
+  correctedSelectedText?: string;
+  correctedReasoning?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateAiSuggestionRequest {
+  correctedFieldName: string;
+  correctedSelectedText: string;
+  correctedReasoning: string;
+}
+
+export interface RejectAiSuggestionRequest {
+  reason?: string;
+}
+
 export const FeedbackEventType = {
   ANNOTATION_CREATED: 'ANNOTATION_CREATED',
   ANNOTATION_UPDATED: 'ANNOTATION_UPDATED',
@@ -212,6 +257,12 @@ export const FeedbackEventType = {
   TRAINING_CANDIDATE_CREATED: 'TRAINING_CANDIDATE_CREATED',
   TRAINING_CANDIDATE_APPROVED: 'TRAINING_CANDIDATE_APPROVED',
   TRAINING_CANDIDATE_REJECTED: 'TRAINING_CANDIDATE_REJECTED',
+  AI_SUGGESTION_CREATED: 'AI_SUGGESTION_CREATED',
+  AI_SUGGESTION_APPROVED: 'AI_SUGGESTION_APPROVED',
+  AI_SUGGESTION_REJECTED: 'AI_SUGGESTION_REJECTED',
+  AI_SUGGESTION_EDITED: 'AI_SUGGESTION_EDITED',
+  AI_SUGGESTION_CONVERTED_TO_ANNOTATION:
+    'AI_SUGGESTION_CONVERTED_TO_ANNOTATION',
 } as const;
 
 export type FeedbackEventType =

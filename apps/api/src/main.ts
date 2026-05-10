@@ -17,6 +17,7 @@ async function bootstrap() {
     .addTag('health', 'API health checks')
     .addTag('workspaces', 'Document Studio workspace management')
     .addTag('feedback', 'Teaching memory feedback events')
+    .addTag('ai', 'Local AI suggestion workflows')
     .build();
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup(`${globalPrefix}/docs`, app, swaggerDocument);

@@ -65,6 +65,18 @@
       </main>
 
       <aside class="document-detail__sidebar" aria-label="Teaching tools">
+        <app-ai-suggestions-panel
+          [suggestions]="aiSuggestions()"
+          [isLoading]="isLoadingAiSuggestions()"
+          [errorMessage]="aiSuggestionError()"
+          [isRecordingFeedback]="isRecordingAiFeedback()"
+          (askSuggestions)="askTaskMindAi()"
+          (approveSuggestion)="approveAiSuggestion($event)"
+          (rejectSuggestion)="rejectAiSuggestion($event)"
+          (editSuggestion)="editAiSuggestion($event)"
+          (convertSuggestion)="convertAiSuggestion($event)"
+        ></app-ai-suggestions-panel>
+
         <app-annotations-panel
           [annotations]="annotations()"
           [isLoading]="annotationsResource.isLoading()"

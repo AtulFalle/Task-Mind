@@ -1,0 +1,132 @@
+.ai-suggestions-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #d9e0ea;
+  border-radius: 8px;
+  background: #ffffff;
+
+  &__header {
+    display: grid;
+    gap: 0.85rem;
+
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h2 {
+      color: #172033;
+      font-size: 1.05rem;
+    }
+
+    p {
+      color: #526276;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    button {
+      justify-self: start;
+    }
+  }
+
+  &__list,
+  &__suggestion,
+  &__editor,
+  &__text,
+  &__reasoning,
+  &__state {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  &__suggestion {
+    padding: 0.9rem;
+    border: 1px solid #edf1f7;
+    border-radius: 8px;
+    background: #fbfcfe;
+  }
+
+  &__suggestion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    div {
+      display: grid;
+      gap: 0.2rem;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 1rem;
+      overflow-wrap: anywhere;
+    }
+
+    p {
+      margin: 0;
+      color: #526276;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    span {
+      color: #314158;
+      font-weight: 700;
+    }
+  }
+
+  &__text,
+  &__reasoning {
+    span {
+      color: #526276;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    p,
+    blockquote {
+      margin: 0;
+      white-space: pre-wrap;
+    }
+
+    blockquote {
+      border-left: 4px solid #00695c;
+      padding: 0.65rem 0.85rem;
+      background: #f5faf9;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+  }
+
+  &__memory-note {
+    margin: 0;
+    color: #526276;
+    font-size: 0.82rem;
+    line-height: 1.4;
+  }
+
+  &__error {
+    margin: 0;
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: #fdecec;
+    color: #8a1c1c;
+  }
+
+  &__state {
+    color: #526276;
+
+    p {
+      margin: 0;
+    }
+  }
+}
