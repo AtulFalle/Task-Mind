@@ -48,7 +48,8 @@ Thumbs.db
 
 __screenshots__/
 
-.nx/polygraph
+.nx
+.vscode
 
 /storage/documents/*
 !/storage/documents/.gitkeep
