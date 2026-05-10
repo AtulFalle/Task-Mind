@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "postinstall": "prisma generate",
     "nx": "node node_modules/nx/dist/bin/nx.js",
     "start": "node node_modules/nx/dist/bin/nx.js serve web",
     "start:web": "node node_modules/nx/dist/bin/nx.js serve web",
