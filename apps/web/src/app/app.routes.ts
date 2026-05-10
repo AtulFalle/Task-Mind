@@ -23,6 +23,13 @@ export const appRoutes: Route[] = [
       ).then((m) => m.DocumentDetailComponent),
   },
   {
+    path: 'workspaces/:workspaceId/training-candidates',
+    loadComponent: () =>
+      import(
+        './features/workspaces/training-candidates/training-candidates.component'
+      ).then((m) => m.TrainingCandidatesComponent),
+  },
+  {
     path: 'workspaces/:workspaceId',
     loadComponent: () =>
       import(

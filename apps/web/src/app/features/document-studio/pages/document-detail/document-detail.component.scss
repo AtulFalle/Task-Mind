@@ -1,7 +1,7 @@
 .document-detail {
   display: grid;
-  gap: 1rem;
-  max-width: 76rem;
+  gap: 1.25rem;
+  max-width: 96rem;
   margin: 0 auto;
   padding: 2rem 1.5rem;
 
@@ -19,12 +19,42 @@
     color: #8a1c1c;
   }
 
-  &__metadata {
-    dl {
-      display: grid;
-      gap: 1rem;
-      margin: 1.5rem 0 0;
+  &__header {
+    display: grid;
+    gap: 1rem;
+    padding: 1.25rem;
+    border: 1px solid #d9e0ea;
+    border-radius: 8px;
+    background: #ffffff;
+  }
+
+  &__headline {
+    display: grid;
+    gap: 1rem;
+
+    h1,
+    p {
+      margin: 0;
     }
+
+    h1 {
+      margin-top: 0.25rem;
+      color: #172033;
+      font-size: 1.45rem;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    p {
+      color: #526276;
+      line-height: 1.45;
+    }
+  }
+
+  &__metadata {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
 
     dt {
       color: #526276;
@@ -35,37 +65,50 @@
 
     dd {
       margin: 0.25rem 0 0;
+      overflow-wrap: anywhere;
     }
   }
 
-  &__studio {
+  &__workspace,
+  &__main,
+  &__sidebar {
     display: grid;
     gap: 1rem;
     align-items: start;
   }
+
 }
 
 @media (min-width: 768px) {
   .document-detail {
     padding-inline: 2rem;
 
-    &__metadata dl {
+    &__headline {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+    }
+
+    &__metadata {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1100px) {
   .document-detail {
-    max-width: 94rem;
-
-    &__studio {
-      grid-template-columns: minmax(0, 1fr) minmax(22rem, 28rem);
+    &__headline h1 {
+      font-size: 1.95rem;
     }
 
-    app-annotations-panel {
+    &__workspace {
+      grid-template-columns: minmax(0, 1fr) minmax(24rem, 30rem);
+    }
+
+    &__sidebar {
       position: sticky;
       top: 1rem;
+      max-height: calc(100vh - 2rem);
+      overflow: auto;
     }
   }
 }

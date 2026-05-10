@@ -1,0 +1,65 @@
+<section class="training-candidates-panel" aria-labelledby="training-candidates-title">
+  <div class="training-candidates-panel__header">
+    <div>
+      <h2 id="training-candidates-title">Training candidates</h2>
+      <p>Reviewed teaching examples kept ready for future dataset export.</p>
+    </div>
+
+    <a
+      mat-button
+      [routerLink]="['/workspaces', workspaceId(), 'training-candidates']"
+    >
+      <mat-icon aria-hidden="true">rate_review</mat-icon>
+      Review
+    </a>
+  </div>
+
+  @if (isLoading()) {
+    <div class="training-candidates-panel__state">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else if (errorMessage()) {
+    <p class="training-candidates-panel__error">{{ errorMessage() }}</p>
+  } @else {
+    <dl class="training-candidates-panel__counts">
+      <div>
+        <dt>Total</dt>
+        <dd>{{ counts().total }}</dd>
+      </div>
+      <div>
+        <dt>Draft</dt>
+        <dd>{{ counts().draft }}</dd>
+      </div>
+      <div>
+        <dt>Reviewed</dt>
+        <dd>{{ counts().reviewed }}</dd>
+      </div>
+      <div>
+        <dt>Approved</dt>
+        <dd>{{ counts().approved }}</dd>
+      </div>
+      <div>
+        <dt>Rejected</dt>
+        <dd>{{ counts().rejected }}</dd>
+      </div>
+    </dl>
+
+    @if (recentCandidates().length > 0) {
+      <div class="training-candidates-panel__recent">
+        @for (candidate of recentCandidates(); track candidate.id) {
+          <article class="training-candidates-panel__item">
+            <div>
+              <h3>{{ candidate.instruction }}</h3>
+              <p>{{ candidate.candidateType }}</p>
+            </div>
+            <mat-chip>{{ candidate.status }}</mat-chip>
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="training-candidates-panel__state">
+        <p>No training candidates yet. Create drafts from reviewed annotations.</p>
+      </div>
+    }
+  }
+</section>

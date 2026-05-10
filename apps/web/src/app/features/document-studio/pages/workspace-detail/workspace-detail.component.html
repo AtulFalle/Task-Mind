@@ -35,6 +35,13 @@
           (deleteRule)="deleteRule($event)"
         ></app-operational-rules-panel>
 
+        <app-training-candidates-panel
+          [workspaceId]="workspace.id"
+          [candidates]="trainingCandidates()"
+          [isLoading]="trainingCandidatesResource.isLoading()"
+          [errorMessage]="trainingCandidatesErrorMessage()"
+        ></app-training-candidates-panel>
+
         <app-teaching-memory-panel
           [events]="feedbackEvents()"
           [isLoading]="feedbackEventsResource.isLoading()"

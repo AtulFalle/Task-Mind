@@ -5,13 +5,14 @@ import {
   Get,
   HttpCode,
   Param,
+  Patch,
   Post,
-  Put,
   ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
@@ -20,10 +21,11 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
-import type { Annotation } from '@task-mind/shared';
+import type { Annotation, LinkedOperationalRule } from '@task-mind/shared';
 import { AnnotationsService } from './annotations.service';
 import { AnnotationDto } from './dto/annotation.dto';
 import { CreateAnnotationDto } from './dto/create-annotation.dto';
+import { LinkedOperationalRuleDto } from './dto/linked-operational-rule.dto';
 import { UpdateAnnotationDto } from './dto/update-annotation.dto';
 
 @ApiTags('annotations')
@@ -74,7 +76,83 @@ export class AnnotationsController {
     return this.annotationsService.findByDocument(documentId);
   }
 
-  @Put('annotations/:annotationId')
+  @Post('annotations/:annotationId/rules/:ruleId')
+  @ApiOperation({ summary: 'Link an operational rule to an annotation' })
+  @ApiParam({
+    name: 'annotationId',
+    description: 'Annotation id.',
+    example: 'a5c23419-866a-46aa-9d7e-bff2e5a645bd',
+  })
+  @ApiParam({
+    name: 'ruleId',
+    description: 'Operational rule id.',
+    example: '3f64d20c-ae9a-4c06-bb62-b71f65d10c75',
+  })
+  @ApiCreatedResponse({
+    description: 'Operational rule linked to annotation.',
+    type: LinkedOperationalRuleDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Annotation and rule belong to different workspaces.',
+  })
+  @ApiConflictResponse({
+    description: 'Rule is already linked to this annotation.',
+  })
+  @ApiNotFoundResponse({ description: 'Annotation or rule was not found.' })
+  linkRule(
+    @Param('annotationId') annotationId: string,
+    @Param('ruleId') ruleId: string,
+  ): Promise<LinkedOperationalRule> {
+    return this.annotationsService.linkRule(annotationId, ruleId);
+  }
+
+  @Delete('annotations/:annotationId/rules/:ruleId')
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Unlink an operational rule from an annotation' })
+  @ApiParam({
+    name: 'annotationId',
+    description: 'Annotation id.',
+    example: 'a5c23419-866a-46aa-9d7e-bff2e5a645bd',
+  })
+  @ApiParam({
+    name: 'ruleId',
+    description: 'Operational rule id.',
+    example: '3f64d20c-ae9a-4c06-bb62-b71f65d10c75',
+  })
+  @ApiNoContentResponse({ description: 'Operational rule unlinked.' })
+  @ApiBadRequestResponse({
+    description: 'Annotation and rule belong to different workspaces.',
+  })
+  @ApiNotFoundResponse({
+    description: 'Annotation, rule, or annotation-rule link was not found.',
+  })
+  unlinkRule(
+    @Param('annotationId') annotationId: string,
+    @Param('ruleId') ruleId: string,
+  ): Promise<void> {
+    return this.annotationsService.unlinkRule(annotationId, ruleId);
+  }
+
+  @Get('annotations/:annotationId/rules')
+  @ApiOperation({ summary: 'List operational rules linked to an annotation' })
+  @ApiParam({
+    name: 'annotationId',
+    description: 'Annotation id.',
+    example: 'a5c23419-866a-46aa-9d7e-bff2e5a645bd',
+  })
+  @ApiOkResponse({
+    description: 'Linked operational rules ordered newest first.',
+    type: LinkedOperationalRuleDto,
+    isArray: true,
+  })
+  @ApiNotFoundResponse({ description: 'Annotation was not found.' })
+  findLinkedRules(
+    @Param('annotationId') annotationId: string,
+  ): Promise<LinkedOperationalRule[]> {
+    return this.annotationsService.findLinkedRules(annotationId);
+  }
+
+  @Patch('annotations/:annotationId')
   @ApiOperation({ summary: 'Update a teaching annotation' })
   @ApiParam({
     name: 'annotationId',
@@ -87,7 +165,7 @@ export class AnnotationsController {
     type: AnnotationDto,
   })
   @ApiBadRequestResponse({
-    description: 'Field name or selected text was missing.',
+    description: 'Field name was missing.',
   })
   @ApiNotFoundResponse({ description: 'Annotation was not found.' })
   update(

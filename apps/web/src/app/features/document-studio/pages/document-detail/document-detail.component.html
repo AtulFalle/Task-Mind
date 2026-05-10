@@ -1,9 +1,4 @@
 <section class="document-detail" aria-labelledby="document-detail-title">
-  <a mat-button [routerLink]="['/workspaces', workspaceId()]">
-    <mat-icon aria-hidden="true">arrow_back</mat-icon>
-    Workspace
-  </a>
-
   @if (documentResource.isLoading()) {
     <div class="document-detail__status">
       <mat-spinner diameter="36"></mat-spinner>
@@ -11,70 +6,96 @@
   } @else if (errorMessage()) {
     <p class="document-detail__error">{{ errorMessage() }}</p>
   } @else if (document(); as document) {
-    <mat-card class="document-detail__metadata" appearance="outlined">
-      <mat-card-header>
-        <mat-card-title id="document-detail-title">
-          {{ document.originalName }}
-        </mat-card-title>
-        <mat-card-subtitle>{{ document.status }}</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <dl>
-          <div>
-            <dt>Type</dt>
-            <dd>{{ document.mimeType }}</dd>
-          </div>
-          <div>
-            <dt>Size</dt>
-            <dd>{{ document.size }} bytes</dd>
-          </div>
-          <div>
-            <dt>Uploaded</dt>
-            <dd>{{ document.createdAt | date: 'medium' }}</dd>
-          </div>
-          <div>
-            <dt>Stored file</dt>
-            <dd>{{ document.fileName }}</dd>
-          </div>
-          <div>
-            <dt>Extraction</dt>
-            <dd>{{ document.extractedTextStatus }}</dd>
-          </div>
-        </dl>
-      </mat-card-content>
-    </mat-card>
+    <header class="document-detail__header">
+      <a mat-button [routerLink]="['/workspaces', workspaceId()]">
+        <mat-icon aria-hidden="true">arrow_back</mat-icon>
+        Back to workspace
+      </a>
 
-    <div class="document-detail__studio">
-      <app-document-text-viewer
-        [isLoading]="documentTextResource.isLoading()"
-        [status]="documentText()?.status ?? document.extractedTextStatus"
-        [text]="documentText()?.text ?? document.extractedText"
-        [error]="documentText()?.error ?? textErrorMessage()"
-        [annotations]="annotations()"
-        [activeAnnotationId]="activeAnnotationId()"
-        [isSavingAnnotation]="isSavingAnnotation()"
-        [annotationErrorMessage]="annotationSaveError()"
-        (saveAnnotation)="saveAnnotation($event)"
-        (updateAnnotation)="updateAnnotation($event)"
-        (deleteAnnotation)="deleteAnnotation($event)"
-        (annotationSelected)="selectAnnotation($event)"
-      ></app-document-text-viewer>
+      <div class="document-detail__headline">
+        <div>
+          <p>This is where I teach TaskMindAI what this document means.</p>
+          <h1 id="document-detail-title">{{ document.originalName }}</h1>
+        </div>
 
-      <app-annotations-panel
-        [annotations]="annotations()"
-        [isLoading]="annotationsResource.isLoading()"
-        [errorMessage]="annotationsErrorMessage()"
-        [deletingAnnotationId]="deletingAnnotationId()"
-        [activeAnnotationId]="activeAnnotationId()"
-        [editingAnnotation]="editingAnnotation()"
-        [isSavingAnnotation]="isSavingAnnotation()"
-        [saveErrorMessage]="annotationSaveError()"
-        (deleteAnnotation)="deleteAnnotation($event)"
-        (editAnnotation)="startEditAnnotation($event)"
-        (updateAnnotation)="updateAnnotation($event)"
-        (cancelEdit)="cancelEditAnnotation()"
-        (selectAnnotation)="selectAnnotation($event)"
-      ></app-annotations-panel>
+        <mat-chip-set aria-label="Document statuses">
+          <mat-chip>{{ document.status }}</mat-chip>
+          <mat-chip>{{ document.extractedTextStatus }}</mat-chip>
+        </mat-chip-set>
+      </div>
+
+      <dl class="document-detail__metadata">
+        <div>
+          <dt>File type</dt>
+          <dd>{{ document.mimeType }}</dd>
+        </div>
+        <div>
+          <dt>Uploaded</dt>
+          <dd>{{ document.createdAt | date: 'medium' }}</dd>
+        </div>
+        <div>
+          <dt>Size</dt>
+          <dd>{{ document.size }} bytes</dd>
+        </div>
+        <div>
+          <dt>Stored file</dt>
+          <dd>{{ document.fileName }}</dd>
+        </div>
+      </dl>
+    </header>
+
+    <div class="document-detail__workspace">
+      <main class="document-detail__main" aria-label="Extracted document text">
+        <app-document-text-viewer
+          [isLoading]="documentTextResource.isLoading()"
+          [status]="documentText()?.status ?? document.extractedTextStatus"
+          [text]="documentText()?.text ?? document.extractedText"
+          [error]="documentText()?.error ?? textErrorMessage()"
+          [annotations]="annotations()"
+          [activeAnnotationId]="activeAnnotationId()"
+          [showSelectionPopover]="false"
+          [isSavingAnnotation]="isSavingAnnotation()"
+          [annotationErrorMessage]="annotationSaveError()"
+          (saveAnnotation)="saveAnnotation($event)"
+          (updateAnnotation)="updateAnnotation($event)"
+          (deleteAnnotation)="deleteAnnotation($event)"
+          (annotationSelected)="selectAnnotation($event)"
+          (textSelected)="handleTextSelected($event)"
+        ></app-document-text-viewer>
+      </main>
+
+      <aside class="document-detail__sidebar" aria-label="Teaching tools">
+        <app-annotations-panel
+          [annotations]="annotations()"
+          [isLoading]="annotationsResource.isLoading()"
+          [errorMessage]="annotationsErrorMessage()"
+          [deletingAnnotationId]="deletingAnnotationId()"
+          [activeAnnotationId]="activeAnnotationId()"
+          [editingAnnotation]="editingAnnotation()"
+          [workspaceRules]="workspaceRules()"
+          [linkedRulesByAnnotationId]="linkedRulesByAnnotationId()"
+          [isSavingAnnotation]="isSavingAnnotation()"
+          [linkingRuleAnnotationId]="linkingRuleAnnotationId()"
+          [saveErrorMessage]="annotationSaveError()"
+          (deleteAnnotation)="deleteAnnotation($event)"
+          (editAnnotation)="startEditAnnotation($event)"
+          (updateAnnotation)="updateAnnotation($event)"
+          (cancelEdit)="cancelEditAnnotation()"
+          (selectAnnotation)="selectAnnotation($event)"
+          (linkRule)="linkRuleToAnnotation($event)"
+          (unlinkRule)="unlinkRuleFromAnnotation($event)"
+          (createTrainingCandidate)="
+            createTrainingCandidateFromAnnotation($event)
+          "
+        ></app-annotations-panel>
+
+        <app-teaching-memory-panel
+          [events]="feedbackEvents()"
+          [isLoading]="feedbackEventsResource.isLoading()"
+          [errorMessage]="feedbackEventsErrorMessage()"
+          emptyMessage="Document-level teaching activity will appear here."
+        ></app-teaching-memory-panel>
+      </aside>
     </div>
   }
 </section>

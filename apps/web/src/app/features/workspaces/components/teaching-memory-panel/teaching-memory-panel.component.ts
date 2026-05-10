@@ -13,4 +13,7 @@ export class TeachingMemoryPanelComponent {
   readonly events = input.required<FeedbackEvent[]>();
   readonly isLoading = input.required<boolean>();
   readonly errorMessage = input<string>('');
+  readonly emptyMessage = input(
+    'No teaching activity yet. Upload documents, create annotations, or add rules to begin teaching TaskMindAI.',
+  );
 }

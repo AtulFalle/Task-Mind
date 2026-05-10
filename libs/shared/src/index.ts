@@ -88,7 +88,10 @@ export interface CreateAnnotationRequest {
   endOffset?: number;
 }
 
-export type UpdateAnnotationRequest = CreateAnnotationRequest;
+export interface UpdateAnnotationRequest {
+  fieldName: string;
+  explanation?: string;
+}
 
 export const RuleCategory = {
   EXTRACTION: 'EXTRACTION',
@@ -120,21 +123,95 @@ export interface OperationalRule {
   updatedAt: string;
 }
 
+export interface AnnotationRuleLink {
+  id: string;
+  annotationId: string;
+  ruleId: string;
+  workspaceId: string;
+  createdAt: string;
+}
+
+export interface LinkedOperationalRule extends OperationalRule {
+  linkId: string;
+  linkedAt: string;
+}
+
 export interface CreateOperationalRuleRequest {
   title: string;
   ruleText: string;
   category: RuleCategory;
 }
 
+export const TrainingCandidateType = {
+  EXTRACTION: 'EXTRACTION',
+  APPLICABILITY_REJECTION: 'APPLICABILITY_REJECTION',
+  FORMAT_CORRECTION: 'FORMAT_CORRECTION',
+  VALIDATION_RULE: 'VALIDATION_RULE',
+  OTHER: 'OTHER',
+} as const;
+
+export type TrainingCandidateType =
+  (typeof TrainingCandidateType)[keyof typeof TrainingCandidateType];
+
+export const TrainingCandidateStatus = {
+  DRAFT: 'DRAFT',
+  REVIEWED: 'REVIEWED',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+} as const;
+
+export type TrainingCandidateStatus =
+  (typeof TrainingCandidateStatus)[keyof typeof TrainingCandidateStatus];
+
+export interface TrainingCandidate {
+  id: string;
+  workspaceId: string;
+  documentId?: string;
+  annotationId?: string;
+  candidateType: TrainingCandidateType;
+  inputText: string;
+  expectedOutput: Record<string, unknown>;
+  instruction: string;
+  reasoning?: string;
+  status: TrainingCandidateStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTrainingCandidateRequest {
+  documentId?: string;
+  annotationId?: string;
+  candidateType: TrainingCandidateType;
+  inputText: string;
+  expectedOutput: Record<string, unknown>;
+  instruction: string;
+  reasoning?: string;
+  status?: TrainingCandidateStatus;
+}
+
+export interface UpdateTrainingCandidateRequest {
+  candidateType?: TrainingCandidateType;
+  inputText?: string;
+  expectedOutput?: Record<string, unknown>;
+  instruction?: string;
+  reasoning?: string;
+  status?: TrainingCandidateStatus;
+}
+
 export const FeedbackEventType = {
   ANNOTATION_CREATED: 'ANNOTATION_CREATED',
   ANNOTATION_UPDATED: 'ANNOTATION_UPDATED',
   ANNOTATION_DELETED: 'ANNOTATION_DELETED',
+  ANNOTATION_RULE_LINKED: 'ANNOTATION_RULE_LINKED',
+  ANNOTATION_RULE_UNLINKED: 'ANNOTATION_RULE_UNLINKED',
   RULE_CREATED: 'RULE_CREATED',
   RULE_DELETED: 'RULE_DELETED',
   DOCUMENT_UPLOADED: 'DOCUMENT_UPLOADED',
   TEXT_EXTRACTED: 'TEXT_EXTRACTED',
   CORRECTION_ADDED: 'CORRECTION_ADDED',
+  TRAINING_CANDIDATE_CREATED: 'TRAINING_CANDIDATE_CREATED',
+  TRAINING_CANDIDATE_APPROVED: 'TRAINING_CANDIDATE_APPROVED',
+  TRAINING_CANDIDATE_REJECTED: 'TRAINING_CANDIDATE_REJECTED',
 } as const;
 
 export type FeedbackEventType =

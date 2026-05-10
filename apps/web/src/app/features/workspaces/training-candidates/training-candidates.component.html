@@ -1,0 +1,179 @@
+<section class="training-candidates" aria-labelledby="training-candidates-title">
+  <header class="training-candidates__header">
+    <a mat-button [routerLink]="['/workspaces', workspaceId()]">
+      <mat-icon aria-hidden="true">arrow_back</mat-icon>
+      Back to workspace
+    </a>
+
+    <div>
+      <p>Curated examples for future dataset export</p>
+      <h1 id="training-candidates-title">
+        {{ workspace()?.name ?? 'Training candidates' }}
+      </h1>
+    </div>
+  </header>
+
+  @if (workspaceResource.isLoading() || candidatesResource.isLoading()) {
+    <div class="training-candidates__status">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else if (pageErrorMessage()) {
+    <p class="training-candidates__error">{{ pageErrorMessage() }}</p>
+  } @else if (candidates().length > 0) {
+    <div class="training-candidates__table-wrap">
+      <table
+        mat-table
+        [dataSource]="candidates()"
+        class="training-candidates__table"
+      >
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef>Type</th>
+          <td mat-cell *matCellDef="let candidate">
+            {{ candidate.candidateType }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let candidate">
+            <mat-chip>{{ candidate.status }}</mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="instruction">
+          <th mat-header-cell *matHeaderCellDef>Instruction</th>
+          <td mat-cell *matCellDef="let candidate">
+            {{ candidate.instruction }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="expectedOutput">
+          <th mat-header-cell *matHeaderCellDef>Expected output</th>
+          <td mat-cell *matCellDef="let candidate">
+            <code>{{ expectedOutputPreview(candidate) }}</code>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="reasoning">
+          <th mat-header-cell *matHeaderCellDef>Reasoning</th>
+          <td mat-cell *matCellDef="let candidate">
+            {{ candidate.reasoning || 'No reasoning yet.' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="source">
+          <th mat-header-cell *matHeaderCellDef>Source</th>
+          <td mat-cell *matCellDef="let candidate">
+            @if (candidate.annotationId) {
+              Annotation {{ candidate.annotationId }}
+            } @else {
+              Manual
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let candidate">
+            <div class="training-candidates__actions">
+              <button
+                mat-icon-button
+                type="button"
+                aria-label="Edit candidate"
+                (click)="startEdit(candidate)"
+              >
+                <mat-icon aria-hidden="true">edit</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                type="button"
+                aria-label="Approve candidate"
+                [disabled]="savingCandidateId() === candidate.id"
+                (click)="approveCandidate(candidate.id)"
+              >
+                <mat-icon aria-hidden="true">check_circle</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                type="button"
+                aria-label="Reject candidate"
+                [disabled]="savingCandidateId() === candidate.id"
+                (click)="rejectCandidate(candidate.id)"
+              >
+                <mat-icon aria-hidden="true">cancel</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+
+    @if (editingCandidate(); as candidate) {
+      <section
+        class="training-candidates__editor"
+        aria-labelledby="candidate-editor-title"
+      >
+        <div class="training-candidates__editor-header">
+          <div>
+            <h2 id="candidate-editor-title">Review candidate</h2>
+            <p>Created {{ candidate.createdAt | date: 'medium' }}</p>
+          </div>
+          <mat-chip>{{ candidate.status }}</mat-chip>
+        </div>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Instruction</mat-label>
+          <textarea
+            matInput
+            rows="3"
+            [value]="instruction()"
+            (input)="updateInstruction($event)"
+          ></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Expected output JSON</mat-label>
+          <textarea
+            matInput
+            rows="6"
+            [value]="expectedOutputText()"
+            (input)="updateExpectedOutput($event)"
+          ></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Reasoning</mat-label>
+          <textarea
+            matInput
+            rows="4"
+            [value]="reasoning()"
+            (input)="updateReasoning($event)"
+          ></textarea>
+        </mat-form-field>
+
+        @if (saveErrorMessage()) {
+          <p class="training-candidates__error">{{ saveErrorMessage() }}</p>
+        }
+
+        <div class="training-candidates__editor-actions">
+          <button
+            mat-flat-button
+            type="button"
+            [disabled]="savingCandidateId() === candidate.id"
+            (click)="saveCandidate(candidate.id)"
+          >
+            Save review
+          </button>
+          <button mat-button type="button" (click)="cancelEdit()">Cancel</button>
+        </div>
+      </section>
+    }
+  } @else {
+    <div class="training-candidates__empty">
+      <p>No training candidates yet. Create drafts from annotation cards.</p>
+    </div>
+  }
+</section>

@@ -2,9 +2,12 @@ import { HttpClient, httpResource } from '@angular/common/http';
 import { Injectable, inject, type Injector, type Signal } from '@angular/core';
 import type {
   CreateOperationalRuleRequest,
+  CreateTrainingCandidateRequest,
   CreateWorkspaceRequest,
   FeedbackEvent,
   OperationalRule,
+  TrainingCandidate,
+  UpdateTrainingCandidateRequest,
   UpdateWorkspaceRequest,
   Workspace,
 } from '@task-mind/shared';
@@ -83,6 +86,19 @@ export class WorkspaceService {
     );
   }
 
+  getWorkspaceTrainingCandidates(
+    workspaceId: Signal<string | null>,
+    injector: Injector,
+  ) {
+    return httpResource<TrainingCandidate[]>(
+      () => {
+        const id = workspaceId();
+        return id ? `${this.apiUrl}/${id}/training-candidates` : undefined;
+      },
+      { defaultValue: [], injector },
+    );
+  }
+
   createRule(
     workspaceId: string,
     payload: CreateOperationalRuleRequest,
@@ -103,5 +119,43 @@ export class WorkspaceService {
 
   deleteRule(ruleId: string): Promise<void> {
     return firstValueFrom(this.httpClient.delete<void>(`/api/rules/${ruleId}`));
+  }
+
+  createTrainingCandidate(
+    workspaceId: string,
+    payload: CreateTrainingCandidateRequest,
+  ): Promise<TrainingCandidate> {
+    return firstValueFrom(
+      this.httpClient.post<TrainingCandidate>(
+        `${this.apiUrl}/${workspaceId}/training-candidates`,
+        payload,
+      ),
+    );
+  }
+
+  getTrainingCandidate(candidateId: string): Promise<TrainingCandidate> {
+    return firstValueFrom(
+      this.httpClient.get<TrainingCandidate>(
+        `/api/training-candidates/${candidateId}`,
+      ),
+    );
+  }
+
+  updateTrainingCandidate(
+    candidateId: string,
+    payload: UpdateTrainingCandidateRequest,
+  ): Promise<TrainingCandidate> {
+    return firstValueFrom(
+      this.httpClient.patch<TrainingCandidate>(
+        `/api/training-candidates/${candidateId}`,
+        payload,
+      ),
+    );
+  }
+
+  deleteTrainingCandidate(candidateId: string): Promise<void> {
+    return firstValueFrom(
+      this.httpClient.delete<void>(`/api/training-candidates/${candidateId}`),
+    );
   }
 }

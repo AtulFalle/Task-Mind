@@ -7,6 +7,7 @@ import { AnnotationsModule } from '../annotations/annotations.module';
 import { FeedbackModule } from '../feedback/feedback.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { RulesModule } from '../rules/rules.module';
+import { TrainingCandidatesModule } from '../training-candidates/training-candidates.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { RulesModule } from '../rules/rules.module';
     DocumentsModule,
     AnnotationsModule,
     RulesModule,
+    TrainingCandidatesModule,
     FeedbackModule,
   ],
   controllers: [AppController],
