@@ -1,0 +1,55 @@
+<section class="annotation-form" aria-labelledby="annotation-form-title">
+  <div class="annotation-form__header">
+    <h2 id="annotation-form-title">{{ title() }}</h2>
+    <p>I am teaching AI what this selected text means.</p>
+  </div>
+
+  <div class="annotation-form__selected">
+    <span>Selected text</span>
+    <blockquote>{{ selection().text }}</blockquote>
+  </div>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Field name</mat-label>
+    <input
+      matInput
+      type="text"
+      [value]="fieldName()"
+      (input)="updateFieldName($event)"
+      autocomplete="off"
+    />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Why is this important?</mat-label>
+    <textarea
+      matInput
+      rows="4"
+      [value]="explanation()"
+      (input)="updateExplanation($event)"
+    ></textarea>
+  </mat-form-field>
+
+  @if (errorMessage()) {
+    <p class="annotation-form__error">{{ errorMessage() }}</p>
+  }
+
+  <div class="annotation-form__actions">
+    <button
+      mat-flat-button
+      type="button"
+      [disabled]="!canSave()"
+      (click)="save()"
+    >
+      {{ submitLabel() }}
+    </button>
+    <button
+      mat-button
+      type="button"
+      [disabled]="isSaving()"
+      (click)="cancelAnnotation.emit()"
+    >
+      Cancel
+    </button>
+  </div>
+</section>

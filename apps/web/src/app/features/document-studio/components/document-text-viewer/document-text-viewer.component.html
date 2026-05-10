@@ -1,0 +1,118 @@
+<section class="document-text-viewer" aria-labelledby="document-text-title">
+  <div class="document-text-viewer__header">
+    <div>
+      <h2 id="document-text-title">Extracted text</h2>
+      <p>Status: {{ status() ?? 'Loading' }}</p>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="document-text-viewer__state">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else if (error()) {
+    <div class="document-text-viewer__state document-text-viewer__state--error">
+      <mat-icon aria-hidden="true">error</mat-icon>
+      <p>{{ error() }}</p>
+    </div>
+  } @else if (hasText()) {
+    <div class="document-text-viewer__selection-hint">
+      Select text to teach the system what it means.
+    </div>
+    <div
+      #textElement
+      class="document-text-viewer__text"
+      tabindex="0"
+      (mouseup)="captureSelection()"
+      (keyup)="captureSelection()"
+    >
+      @for (segment of textSegments(); track segment.id) {
+        @if (segmentAnnotation(segment); as annotation) {
+          <button
+            class="document-text-viewer__annotation"
+            [class.document-text-viewer__annotation--active]="
+              activeAnnotationId() === annotation.id
+            "
+            type="button"
+            [attr.aria-label]="'Open annotation ' + annotation.fieldName"
+            [attr.data-field]="annotation.fieldName"
+            (click)="openAnnotationPopover(annotation.id, $event)"
+          >{{ segment.text }}</button>
+        } @else {
+          <span>{{ segment.text }}</span>
+        }
+      }
+    </div>
+    @if (popoverPosition(); as position) {
+      <div
+        class="document-text-viewer__popover"
+        [style.left.px]="position.left"
+        [style.top.px]="position.top"
+        role="dialog"
+        aria-label="Annotation details"
+      >
+        @if (pendingSelection(); as selection) {
+          <app-annotation-form
+            [selection]="selection"
+            [isSaving]="isSavingAnnotation()"
+            [errorMessage]="annotationErrorMessage()"
+            title="Create annotation"
+            submitLabel="Save"
+            (saveAnnotation)="submitAnnotation($event)"
+            (cancelAnnotation)="cancelPopover()"
+          ></app-annotation-form>
+        } @else if (selectedAnnotation(); as annotation) {
+          @if (isEditingAnnotation()) {
+            <app-annotation-form
+              [selection]="{
+                text: annotation.selectedText,
+                startOffset: annotation.startOffset,
+                endOffset: annotation.endOffset
+              }"
+              [annotation]="annotation"
+              [isSaving]="isSavingAnnotation()"
+              [errorMessage]="annotationErrorMessage()"
+              title="Edit annotation"
+              submitLabel="Save changes"
+              (saveAnnotation)="submitAnnotationEdit($event)"
+              (cancelAnnotation)="cancelPopover()"
+            ></app-annotation-form>
+          } @else {
+            <div class="document-text-viewer__popover-summary">
+              <div>
+                <span>Field name</span>
+                <strong>{{ annotation.fieldName }}</strong>
+              </div>
+              <div>
+                <span>Selected text</span>
+                <blockquote>{{ annotation.selectedText }}</blockquote>
+              </div>
+              @if (annotation.explanation) {
+                <div>
+                  <span>Why is this important?</span>
+                  <p>{{ annotation.explanation }}</p>
+                </div>
+              }
+              <div class="document-text-viewer__popover-actions">
+                <button mat-flat-button type="button" (click)="editSelectedAnnotation()">
+                  Edit
+                </button>
+                <button mat-button type="button" (click)="deleteSelectedAnnotation()">
+                  Delete
+                </button>
+                <button mat-button type="button" (click)="cancelPopover()">
+                  Close
+                </button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    }
+  } @else {
+    <div class="document-text-viewer__state">
+      <mat-icon aria-hidden="true">article</mat-icon>
+      <p>{{ emptyMessage() }}</p>
+    </div>
+  }
+</section>

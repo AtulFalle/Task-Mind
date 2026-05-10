@@ -1,0 +1,47 @@
+<article
+  class="annotation-card"
+  [class.annotation-card--active]="isActive()"
+  role="button"
+  tabindex="0"
+  (click)="selectAnnotation.emit(annotation().id)"
+  (keydown.enter)="selectAnnotation.emit(annotation().id)"
+  (keydown.space)="selectAnnotation.emit(annotation().id); $event.preventDefault()"
+>
+  <div class="annotation-card__header">
+    <div>
+      <h3>{{ annotation().fieldName }}</h3>
+      <p>{{ annotation().createdAt | date: 'medium' }}</p>
+    </div>
+    <div class="annotation-card__tools">
+      <button
+        mat-icon-button
+        type="button"
+        aria-label="Edit annotation"
+        (click)="editAnnotation.emit(annotation()); $event.stopPropagation()"
+      >
+        <mat-icon aria-hidden="true">edit</mat-icon>
+      </button>
+      <button
+        mat-icon-button
+        type="button"
+        aria-label="Delete annotation"
+        [disabled]="isDeleting()"
+        (click)="deleteAnnotation.emit(annotation().id); $event.stopPropagation()"
+      >
+        <mat-icon aria-hidden="true">delete</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="annotation-card__selected">
+    <span>Selected text</span>
+    <blockquote>{{ annotation().selectedText }}</blockquote>
+  </div>
+
+  @if (annotation().explanation) {
+    <div class="annotation-card__explanation">
+      <span>Why is this important?</span>
+      <p>{{ annotation().explanation }}</p>
+    </div>
+  }
+</article>

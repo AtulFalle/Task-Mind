@@ -1,0 +1,43 @@
+.operational-rule-form {
+  display: grid;
+  gap: 1rem;
+
+  &__header {
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h3 {
+      font-size: 1.05rem;
+    }
+
+    p {
+      margin-top: 0.35rem;
+      color: #526276;
+    }
+  }
+
+  &__fields {
+    display: grid;
+    gap: 1rem;
+  }
+
+  &__error {
+    margin: 0;
+    color: #8a1c1c;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-start;
+  }
+}
+
+@media (min-width: 720px) {
+  .operational-rule-form {
+    &__fields {
+      grid-template-columns: minmax(0, 1fr) 14rem;
+    }
+  }
+}

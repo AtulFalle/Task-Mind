@@ -1,0 +1,51 @@
+.annotation-form {
+  display: grid;
+  gap: 0.85rem;
+  padding: 0.9rem;
+  background: #ffffff;
+
+  &__header {
+    h2,
+    p {
+      margin: 0;
+    }
+
+    p {
+      margin-top: 0.35rem;
+      color: #526276;
+    }
+  }
+
+  &__selected {
+    display: grid;
+    gap: 0.5rem;
+
+    span {
+      color: #526276;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    blockquote {
+      max-height: 6rem;
+      margin: 0;
+      overflow: auto;
+      border-left: 4px solid #3f51b5;
+      padding: 0.6rem 0.75rem;
+      background: #f8fafc;
+      white-space: pre-wrap;
+    }
+  }
+
+  &__error {
+    margin: 0;
+    color: #8a1c1c;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+}

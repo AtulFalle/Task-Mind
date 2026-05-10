@@ -1,5 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { DocumentStatus, type Document } from '@task-mind/shared';
+import {
+  DocumentStatus,
+  ExtractedTextStatus,
+  type Document,
+} from '@task-mind/shared';
 
 export class DocumentDto implements Document {
   @ApiProperty({
@@ -50,6 +54,27 @@ export class DocumentDto implements Document {
     example: DocumentStatus.UPLOADED,
   })
   status!: DocumentStatus;
+
+  @ApiProperty({
+    description: 'Extracted plain text held in memory for MVP 0.',
+    nullable: true,
+    example: 'Invoice #1001\nTotal: $245.00',
+  })
+  extractedText!: string | null;
+
+  @ApiProperty({
+    description: 'Current text extraction status.',
+    enum: ExtractedTextStatus,
+    example: ExtractedTextStatus.COMPLETED,
+  })
+  extractedTextStatus!: ExtractedTextStatus;
+
+  @ApiProperty({
+    description: 'Text extraction error when parsing failed.',
+    required: false,
+    example: 'Unable to parse the uploaded document.',
+  })
+  extractionError?: string;
 
   @ApiProperty({
     description: 'ISO timestamp for when the document was uploaded.',

@@ -1,0 +1,36 @@
+<section class="operational-rules-panel" aria-labelledby="operational-rules-title">
+  <div class="operational-rules-panel__header">
+    <div>
+      <h2 id="operational-rules-title">Operational rules</h2>
+      <p>Rules are human-written teaching instructions for this workspace.</p>
+    </div>
+  </div>
+
+  <app-operational-rule-form
+    [isSaving]="isSaving()"
+    [errorMessage]="saveErrorMessage()"
+    (saveRule)="createRule.emit($event)"
+  ></app-operational-rule-form>
+
+  @if (isLoading()) {
+    <div class="operational-rules-panel__state">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else if (errorMessage()) {
+    <p class="operational-rules-panel__error">{{ errorMessage() }}</p>
+  } @else if (rules().length > 0) {
+    <div class="operational-rules-panel__list">
+      @for (rule of rules(); track rule.id) {
+        <app-operational-rule-card
+          [rule]="rule"
+          [isDeleting]="deletingRuleId() === rule.id"
+          (deleteRule)="deleteRule.emit($event)"
+        ></app-operational-rule-card>
+      }
+    </div>
+  } @else {
+    <div class="operational-rules-panel__state">
+      <p>No operational rules yet. Add rules to teach TaskMindAI how this workspace works.</p>
+    </div>
+  }
+</section>
