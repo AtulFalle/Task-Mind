@@ -19,9 +19,10 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
-import type { Document } from '@task-mind/shared';
+import type { Document, DocumentTextResponse } from '@task-mind/shared';
 import { memoryStorage } from 'multer';
 import { extname } from 'node:path';
+import { DocumentTextDto } from './dto/document-text.dto';
 import { DocumentDto } from './dto/document.dto';
 import { DocumentsService } from './documents.service';
 
@@ -114,6 +115,22 @@ export class DocumentsController {
   @ApiNotFoundResponse({ description: 'Workspace was not found.' })
   findByWorkspace(@Param('workspaceId') workspaceId: string): Document[] {
     return this.documentsService.findByWorkspace(workspaceId);
+  }
+
+  @Get('documents/:documentId/text')
+  @ApiOperation({ summary: 'Get extracted document text by id' })
+  @ApiParam({
+    name: 'documentId',
+    description: 'Document id.',
+    example: '25ab7e76-a1fd-443a-a803-0d0b81f6269b',
+  })
+  @ApiOkResponse({
+    description: 'Extracted document text status and content.',
+    type: DocumentTextDto,
+  })
+  @ApiNotFoundResponse({ description: 'Document was not found.' })
+  getText(@Param('documentId') documentId: string): DocumentTextResponse {
+    return this.documentsService.getText(documentId);
   }
 
   @Get('documents/:documentId')

@@ -38,23 +38,10 @@
     }
   }
 
-  &__viewer,
-  &__annotations {
-    min-height: 14rem;
-    padding: 1.25rem;
-    border: 1px dashed #b9c4d2;
-    border-radius: 8px;
-    background: #ffffff;
-
-    h2,
-    p {
-      margin: 0;
-    }
-
-    p {
-      margin-top: 0.5rem;
-      color: #526276;
-    }
+  &__studio {
+    display: grid;
+    gap: 1rem;
+    align-items: start;
   }
 }
 
@@ -64,6 +51,21 @@
 
     &__metadata dl {
       grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+}
+
+@media (min-width: 1024px) {
+  .document-detail {
+    max-width: 94rem;
+
+    &__studio {
+      grid-template-columns: minmax(0, 1fr) minmax(22rem, 28rem);
+    }
+
+    app-annotations-panel {
+      position: sticky;
+      top: 1rem;
     }
   }
 }

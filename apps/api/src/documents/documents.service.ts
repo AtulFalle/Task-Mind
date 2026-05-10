@@ -3,11 +3,17 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { DocumentStatus, type Document } from '@task-mind/shared';
+import {
+  DocumentStatus,
+  ExtractedTextStatus,
+  type Document,
+  type DocumentTextResponse,
+} from '@task-mind/shared';
 import { randomUUID } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { extname, join, resolve } from 'node:path';
 import { WorkspacesService } from '../workspaces/workspaces.service';
+import { DocumentTextParserService } from './document-text-parser.service';
 
 const DOCUMENT_STORAGE_DIR = resolve(process.cwd(), 'storage', 'documents');
 const STORAGE_PATH_PREFIX = join('storage', 'documents');
@@ -16,7 +22,10 @@ const STORAGE_PATH_PREFIX = join('storage', 'documents');
 export class DocumentsService {
   private readonly documents = new Map<string, Document>();
 
-  constructor(private readonly workspacesService: WorkspacesService) {}
+  constructor(
+    private readonly workspacesService: WorkspacesService,
+    private readonly documentTextParserService: DocumentTextParserService,
+  ) {}
 
   async upload(
     workspaceId: string,
@@ -46,13 +55,16 @@ export class DocumentsService {
       size: file.size,
       filePath: join(STORAGE_PATH_PREFIX, fileName),
       status: DocumentStatus.UPLOADED,
+      extractedText: null,
+      extractedTextStatus: ExtractedTextStatus.NOT_STARTED,
       createdAt: now,
       updatedAt: now,
     };
 
     this.documents.set(document.id, document);
+    await this.extractText(document, absoluteFilePath);
 
-    return document;
+    return this.findOne(document.id);
   }
 
   findByWorkspace(workspaceId: string): Document[] {
@@ -71,6 +83,76 @@ export class DocumentsService {
     }
 
     return document;
+  }
+
+  getText(documentId: string): DocumentTextResponse {
+    const document = this.findOne(documentId);
+
+    return {
+      documentId: document.id,
+      status: document.extractedTextStatus,
+      text: document.extractedText,
+      ...(document.extractionError ? { error: document.extractionError } : {}),
+    };
+  }
+
+  private async extractText(
+    document: Document,
+    absoluteFilePath: string,
+  ): Promise<void> {
+    this.updateExtraction(document, {
+      extractedTextStatus: ExtractedTextStatus.PROCESSING,
+      extractionError: undefined,
+    });
+
+    try {
+      const parsedText = await this.documentTextParserService.parse(
+        absoluteFilePath,
+        document.mimeType,
+      );
+
+      this.updateExtraction(document, {
+        extractedText: parsedText.text,
+        extractedTextStatus: parsedText.status,
+        extractionError: parsedText.error,
+        status:
+          parsedText.status === ExtractedTextStatus.COMPLETED
+            ? DocumentStatus.PARSED
+            : document.status,
+      });
+    } catch (error) {
+      this.updateExtraction(document, {
+        extractedText: null,
+        extractedTextStatus: ExtractedTextStatus.FAILED,
+        extractionError:
+          error instanceof Error
+            ? error.message
+            : 'Unable to parse the uploaded document.',
+        status: DocumentStatus.FAILED,
+      });
+    }
+  }
+
+  private updateExtraction(
+    document: Document,
+    update: Partial<
+      Pick<
+        Document,
+        | 'extractedText'
+        | 'extractedTextStatus'
+        | 'extractionError'
+        | 'status'
+        | 'updatedAt'
+      >
+    >,
+  ): void {
+    const updatedDocument: Document = {
+      ...document,
+      ...update,
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.documents.set(document.id, updatedDocument);
   }
 
   private getSafeExtension(originalName: string): string {

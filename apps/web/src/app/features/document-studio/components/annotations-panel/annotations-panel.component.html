@@ -1,0 +1,54 @@
+<section class="annotations-panel" aria-labelledby="annotations-panel-title">
+  <div class="annotations-panel__header">
+    <h2 id="annotations-panel-title">Annotations</h2>
+    <p>Saved examples of what selected document text means.</p>
+  </div>
+
+  @if (isLoading()) {
+    <div class="annotations-panel__state">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else if (errorMessage()) {
+    <p class="annotations-panel__error">{{ errorMessage() }}</p>
+  } @else if (annotations().length > 0) {
+    @if (editingAnnotation(); as annotation) {
+      <div class="annotations-panel__editor">
+        <app-annotation-form
+          [selection]="{
+            text: annotation.selectedText,
+            startOffset: annotation.startOffset,
+            endOffset: annotation.endOffset
+          }"
+          [annotation]="annotation"
+          [isSaving]="isSavingAnnotation()"
+          [errorMessage]="saveErrorMessage()"
+          title="Edit annotation"
+          submitLabel="Save changes"
+          (saveAnnotation)="
+            updateAnnotation.emit({
+              annotationId: annotation.id,
+              payload: $event
+            })
+          "
+          (cancelAnnotation)="cancelEdit.emit()"
+        ></app-annotation-form>
+      </div>
+    }
+    <div class="annotations-panel__list">
+      @for (annotation of annotations(); track annotation.id) {
+        <app-annotation-card
+          [annotation]="annotation"
+          [isDeleting]="deletingAnnotationId() === annotation.id"
+          [isActive]="activeAnnotationId() === annotation.id"
+          (deleteAnnotation)="deleteAnnotation.emit($event)"
+          (editAnnotation)="editAnnotation.emit($event)"
+          (selectAnnotation)="selectAnnotation.emit($event)"
+        ></app-annotation-card>
+      }
+    </div>
+  } @else {
+    <div class="annotations-panel__state">
+      <p>Select extracted text to create the first teaching annotation.</p>
+    </div>
+  }
+</section>

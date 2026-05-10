@@ -36,18 +36,45 @@
             <dt>Stored file</dt>
             <dd>{{ document.fileName }}</dd>
           </div>
+          <div>
+            <dt>Extraction</dt>
+            <dd>{{ document.extractedTextStatus }}</dd>
+          </div>
         </dl>
       </mat-card-content>
     </mat-card>
 
-    <section class="document-detail__viewer" aria-labelledby="viewer-title">
-      <h2 id="viewer-title">Document viewer</h2>
-      <p>Parsed text and document preview will appear here in a later task.</p>
-    </section>
+    <div class="document-detail__studio">
+      <app-document-text-viewer
+        [isLoading]="documentTextResource.isLoading()"
+        [status]="documentText()?.status ?? document.extractedTextStatus"
+        [text]="documentText()?.text ?? document.extractedText"
+        [error]="documentText()?.error ?? textErrorMessage()"
+        [annotations]="annotations()"
+        [activeAnnotationId]="activeAnnotationId()"
+        [isSavingAnnotation]="isSavingAnnotation()"
+        [annotationErrorMessage]="annotationSaveError()"
+        (saveAnnotation)="saveAnnotation($event)"
+        (updateAnnotation)="updateAnnotation($event)"
+        (deleteAnnotation)="deleteAnnotation($event)"
+        (annotationSelected)="selectAnnotation($event)"
+      ></app-document-text-viewer>
 
-    <section class="document-detail__annotations" aria-labelledby="annotations-title">
-      <h2 id="annotations-title">Annotation workspace</h2>
-      <p>Highlights, operational rules, and teaching corrections will appear here later.</p>
-    </section>
+      <app-annotations-panel
+        [annotations]="annotations()"
+        [isLoading]="annotationsResource.isLoading()"
+        [errorMessage]="annotationsErrorMessage()"
+        [deletingAnnotationId]="deletingAnnotationId()"
+        [activeAnnotationId]="activeAnnotationId()"
+        [editingAnnotation]="editingAnnotation()"
+        [isSavingAnnotation]="isSavingAnnotation()"
+        [saveErrorMessage]="annotationSaveError()"
+        (deleteAnnotation)="deleteAnnotation($event)"
+        (editAnnotation)="startEditAnnotation($event)"
+        (updateAnnotation)="updateAnnotation($event)"
+        (cancelEdit)="cancelEditAnnotation()"
+        (selectAnnotation)="selectAnnotation($event)"
+      ></app-annotations-panel>
+    </div>
   }
 </section>

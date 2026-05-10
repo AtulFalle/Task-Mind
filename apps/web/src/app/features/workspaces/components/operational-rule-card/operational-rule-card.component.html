@@ -1,0 +1,24 @@
+<article class="operational-rule-card">
+  <div class="operational-rule-card__header">
+    <div>
+      <div class="operational-rule-card__meta">
+        <span>{{ rule().category }}</span>
+        <span>{{ rule().source }}</span>
+        <span>Confidence {{ rule().confidence }}</span>
+      </div>
+      <h3>{{ rule().title }}</h3>
+      <p>{{ rule().createdAt | date: 'medium' }}</p>
+    </div>
+    <button
+      mat-icon-button
+      type="button"
+      aria-label="Delete operational rule"
+      [disabled]="isDeleting()"
+      (click)="deleteRule.emit(rule().id)"
+    >
+      <mat-icon aria-hidden="true">delete</mat-icon>
+    </button>
+  </div>
+
+  <p class="operational-rule-card__text">{{ rule().ruleText }}</p>
+</article>

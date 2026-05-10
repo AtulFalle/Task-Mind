@@ -8,16 +8,31 @@
   } @else if (workspace(); as workspace) {
     <app-workspace-header [workspace]="workspace"></app-workspace-header>
 
-    <app-document-upload
-      [workspaceId]="workspace.id"
-      [onUploaded]="handleDocumentUploaded"
-    ></app-document-upload>
+    <div class="document-studio__workspace-grid">
+      <div class="document-studio__documents">
+        <app-document-upload
+          [workspaceId]="workspace.id"
+          [onUploaded]="handleDocumentUploaded"
+        ></app-document-upload>
 
-    <app-document-list
-      [workspaceId]="workspace.id"
-      [documents]="documents()"
-      [isLoading]="documentsResource.isLoading()"
-      [errorMessage]="documentsErrorMessage()"
-    ></app-document-list>
+        <app-document-list
+          [workspaceId]="workspace.id"
+          [documents]="documents()"
+          [isLoading]="documentsResource.isLoading()"
+          [errorMessage]="documentsErrorMessage()"
+        ></app-document-list>
+      </div>
+
+      <app-operational-rules-panel
+        [rules]="rules()"
+        [isLoading]="rulesResource.isLoading()"
+        [isSaving]="isSavingRule()"
+        [errorMessage]="rulesErrorMessage()"
+        [saveErrorMessage]="ruleSaveError()"
+        [deletingRuleId]="deletingRuleId()"
+        (createRule)="createRule($event)"
+        (deleteRule)="deleteRule($event)"
+      ></app-operational-rules-panel>
+    </div>
   }
 </section>

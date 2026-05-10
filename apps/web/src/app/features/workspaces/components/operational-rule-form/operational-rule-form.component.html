@@ -1,0 +1,56 @@
+<section class="operational-rule-form" aria-labelledby="operational-rule-form-title">
+  <div class="operational-rule-form__header">
+    <h3 id="operational-rule-form-title">Teach TaskMindAI a rule</h3>
+    <p>Operational rules help AI understand how this workflow should behave.</p>
+  </div>
+
+  <div class="operational-rule-form__fields">
+    <mat-form-field appearance="outline">
+      <mat-label>Title</mat-label>
+      <input
+        matInput
+        type="text"
+        [value]="title()"
+        (input)="updateTitle($event)"
+        autocomplete="off"
+      />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Category</mat-label>
+      <mat-select
+        [value]="category()"
+        (valueChange)="updateCategory($event)"
+      >
+        @for (categoryOption of categories; track categoryOption) {
+          <mat-option [value]="categoryOption">{{ categoryOption }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Rule text</mat-label>
+    <textarea
+      matInput
+      rows="4"
+      [value]="ruleText()"
+      (input)="updateRuleText($event)"
+    ></textarea>
+  </mat-form-field>
+
+  @if (errorMessage()) {
+    <p class="operational-rule-form__error">{{ errorMessage() }}</p>
+  }
+
+  <div class="operational-rule-form__actions">
+    <button
+      mat-flat-button
+      type="button"
+      [disabled]="!canSave()"
+      (click)="submit()"
+    >
+      Add rule
+    </button>
+  </div>
+</section>

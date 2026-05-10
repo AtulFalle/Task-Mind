@@ -1,0 +1,48 @@
+.operational-rules-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid #d9e0ea;
+  border-radius: 8px;
+  background: #ffffff;
+
+  &__header {
+    h2,
+    p {
+      margin: 0;
+    }
+
+    p {
+      margin-top: 0.35rem;
+      color: #526276;
+    }
+  }
+
+  &__list {
+    display: grid;
+    gap: 1rem;
+  }
+
+  &__state {
+    display: grid;
+    place-items: center;
+    min-height: 10rem;
+    border: 1px dashed #b9c4d2;
+    border-radius: 8px;
+    color: #526276;
+    text-align: center;
+
+    p {
+      max-width: 34rem;
+      margin: 0;
+    }
+  }
+
+  &__error {
+    margin: 0;
+    padding: 1rem;
+    border-radius: 8px;
+    background: #fdecec;
+    color: #8a1c1c;
+  }
+}

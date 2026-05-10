@@ -1,10 +1,13 @@
-import { httpResource } from '@angular/common/http';
-import { Injectable, type Injector, type Signal } from '@angular/core';
+import { HttpClient, httpResource } from '@angular/common/http';
+import { Injectable, inject, type Injector, type Signal } from '@angular/core';
 import type {
+  CreateOperationalRuleRequest,
   CreateWorkspaceRequest,
+  OperationalRule,
   UpdateWorkspaceRequest,
   Workspace,
 } from '@task-mind/shared';
+import { firstValueFrom } from 'rxjs';
 
 export interface SaveWorkspaceRequest {
   requestId: number;
@@ -14,6 +17,7 @@ export interface SaveWorkspaceRequest {
 
 @Injectable({ providedIn: 'root' })
 export class WorkspaceService {
+  private readonly httpClient = inject(HttpClient);
   private readonly apiUrl = '/api/workspaces';
 
   getWorkspacesResource(injector: Injector) {
@@ -53,5 +57,31 @@ export class WorkspaceService {
       },
       { injector },
     );
+  }
+
+  getWorkspaceRules(workspaceId: Signal<string | null>, injector: Injector) {
+    return httpResource<OperationalRule[]>(
+      () => {
+        const id = workspaceId();
+        return id ? `${this.apiUrl}/${id}/rules` : undefined;
+      },
+      { defaultValue: [], injector },
+    );
+  }
+
+  createRule(
+    workspaceId: string,
+    payload: CreateOperationalRuleRequest,
+  ): Promise<OperationalRule> {
+    return firstValueFrom(
+      this.httpClient.post<OperationalRule>(
+        `${this.apiUrl}/${workspaceId}/rules`,
+        payload,
+      ),
+    );
+  }
+
+  deleteRule(ruleId: string): Promise<void> {
+    return firstValueFrom(this.httpClient.delete<void>(`/api/rules/${ruleId}`));
   }
 }

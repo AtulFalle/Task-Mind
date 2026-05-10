@@ -1,6 +1,8 @@
-import { Component, computed, inject, Injector } from '@angular/core';
+import { Component, computed, inject, Injector, signal } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute } from '@angular/router';
+import type { CreateOperationalRuleRequest } from '@task-mind/shared';
+import { OperationalRulesPanelComponent } from '../../../workspaces/components/operational-rules-panel/operational-rules-panel.component';
 import { WorkspaceService } from '../../../workspaces/workspace.service';
 import { DocumentListComponent } from '../../components/document-list/document-list.component';
 import { DocumentUploadComponent } from '../../components/document-upload/document-upload.component';
@@ -14,6 +16,7 @@ import { DocumentStudioService } from '../../services/document-studio.service';
     WorkspaceHeaderComponent,
     DocumentUploadComponent,
     DocumentListComponent,
+    OperationalRulesPanelComponent,
   ],
   templateUrl: './workspace-detail.component.html',
   styleUrl: './workspace-detail.component.scss',
@@ -45,10 +48,58 @@ export class WorkspaceDetailComponent {
       this.injector,
     );
   protected readonly documents = this.documentsResource.value;
+  protected readonly rulesResource = this.workspaceService.getWorkspaceRules(
+    this.workspaceId,
+    this.injector,
+  );
+  protected readonly rules = this.rulesResource.value;
+  protected readonly isSavingRule = signal(false);
+  protected readonly ruleSaveError = signal('');
+  protected readonly deletingRuleId = signal<string | null>(null);
   protected readonly documentsErrorMessage = computed(() =>
     this.documentsResource.error() ? 'Documents could not be loaded.' : '',
+  );
+  protected readonly rulesErrorMessage = computed(() =>
+    this.rulesResource.error() ? 'Operational rules could not be loaded.' : '',
   );
   protected readonly handleDocumentUploaded = () => {
     this.documentsResource.reload();
   };
+
+  protected async createRule(
+    payload: CreateOperationalRuleRequest,
+  ): Promise<void> {
+    const workspaceId = this.workspaceId();
+
+    if (!workspaceId || this.isSavingRule()) {
+      return;
+    }
+
+    this.isSavingRule.set(true);
+    this.ruleSaveError.set('');
+
+    try {
+      await this.workspaceService.createRule(workspaceId, payload);
+      this.rulesResource.reload();
+    } catch {
+      this.ruleSaveError.set('Operational rule could not be saved.');
+    } finally {
+      this.isSavingRule.set(false);
+    }
+  }
+
+  protected async deleteRule(ruleId: string): Promise<void> {
+    if (this.deletingRuleId()) {
+      return;
+    }
+
+    this.deletingRuleId.set(ruleId);
+
+    try {
+      await this.workspaceService.deleteRule(ruleId);
+      this.rulesResource.reload();
+    } finally {
+      this.deletingRuleId.set(null);
+    }
+  }
 }

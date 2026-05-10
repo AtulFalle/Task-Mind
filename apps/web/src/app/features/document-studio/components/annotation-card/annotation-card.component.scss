@@ -1,0 +1,67 @@
+.annotation-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #d9e0ea;
+  border-radius: 8px;
+  background: #ffffff;
+  cursor: pointer;
+
+  &--active {
+    border-color: #3f51b5;
+    box-shadow: inset 4px 0 0 #3f51b5;
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h3 {
+      font-size: 1rem;
+    }
+
+    p {
+      margin-top: 0.25rem;
+      color: #526276;
+      font-size: 0.875rem;
+    }
+  }
+
+  &__tools {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 0.25rem;
+  }
+
+  &__selected,
+  &__explanation {
+    display: grid;
+    gap: 0.4rem;
+
+    span {
+      color: #526276;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    p,
+    blockquote {
+      margin: 0;
+      white-space: pre-wrap;
+    }
+
+    blockquote {
+      border-left: 4px solid #3f51b5;
+      padding: 0.65rem 0.85rem;
+      background: #f8fafc;
+    }
+  }
+}
