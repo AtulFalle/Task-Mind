@@ -1,68 +1,174 @@
 # TaskMindAI
 
-TaskMindAI is a collaborative AI teaching and specialization platform. The MVP starts with Document Studio: workspaces, document upload, parsed text, annotations, operational rules, human corrections, and teaching memory.
+[![Nx](https://img.shields.io/badge/nx-powered-blue?style=flat-square)](https://nx.dev)
+[![Angular](https://img.shields.io/badge/Angular-latest-red?style=flat-square&logo=angular)](https://angular.dev)
+[![NestJS](https://img.shields.io/badge/NestJS-latest-red?style=flat-square&logo=nestjs)](https://nestjs.com)
+[![Prisma](https://img.shields.io/badge/Prisma-latest-blue?style=flat-square&logo=prisma)](https://prisma.io)
 
-## Workspace
+> **Collaborative AI teaching and specialization platform.**
 
-- `apps/web`: Angular frontend.
-- `apps/api`: future NestJS REST API.
-- `apps/ai`: future FastAPI AI service.
-- `libs/shared`: shared contracts and domain types.
-- `libs/ui`: reusable Angular UI.
-- `libs/config`: shared configuration helpers.
-- `prisma`: Prisma schema, migrations, and seeds.
-- `docker`: Docker Compose and container assets.
-- `docs`: product and architecture notes.
+TaskMindAI empowers humans to teach operational workflows to AI through interaction, annotations, and structured rules. Unlike generic chatbots, TaskMindAI focuses on **applicability-aware specialization**, where the system learns not just how to extract data, but *when* it should apply its reasoning.
 
-## Nx Commands
+---
 
-Use Nx for project tasks:
+## 🏗 System Architecture
 
-```sh
-node node_modules/nx/dist/bin/nx.js show projects
-node node_modules/nx/dist/bin/nx.js serve web
-node node_modules/nx/dist/bin/nx.js build web
-node node_modules/nx/dist/bin/nx.js test web
-node node_modules/nx/dist/bin/nx.js lint web
-node node_modules/nx/dist/bin/nx.js serve api
-node node_modules/nx/dist/bin/nx.js build api
-node node_modules/nx/dist/bin/nx.js test api
-node node_modules/nx/dist/bin/nx.js lint api
+The project is managed as an **Nx Monorepo**, ensuring high-quality standards, shared contracts, and efficient task execution.
+
+```mermaid
+graph TD
+    subgraph "Frontend (apps/web)"
+        A[Angular Studio UI] --> B[Signals-based State]
+    end
+
+    subgraph "Backend (apps/api)"
+        C[NestJS API] --> D[Prisma ORM]
+        C --> E[Swagger/OpenAPI]
+    end
+
+    subgraph "AI Engine (Future: apps/ai)"
+        F[FastAPI Service] --> G[Ollama / LLM]
+    end
+
+    subgraph "Data Layer"
+        D --> H[(PostgreSQL)]
+        D --> I[(Teaching Memory)]
+    end
+
+    A <-->|REST API| C
+    C <-->|Internal RPC| F
 ```
 
-`npm exec nx ...` is preferred when the local npm shim is working.
+---
 
-## Local Persistence
+## ✨ Product Workflow: Document Studio (MVP 0)
 
-TaskMindAI uses Prisma with PostgreSQL for core MVP data: workspaces, documents, extracted text, annotations, operational rules, and feedback events.
+Our primary focus is the **Document Studio**, where humans specialize the AI's understanding of complex documents.
 
-1. Copy `.env.example` to `.env` and keep the default local URL unless you changed the database credentials.
+```mermaid
+sequenceDiagram
+    participant User
+    participant Studio as Angular Studio
+    participant API as NestJS API
+    participant AI as AI Service
+    participant DB as PostgreSQL
 
-```sh
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/taskmindai?schema=public"
+    User->>Studio: Upload Document
+    Studio->>API: Process Document
+    API->>DB: Store Raw Text
+    User->>Studio: Highlight & Annotate
+    Studio->>API: Save Rules/Corrections
+    API->>DB: Update Teaching Memory
+    AI-->>API: Suggest Extractions (Future)
+    User->>Studio: Correct & Validate
+    Studio->>API: Confirm Specialization
 ```
 
-2. Start the local database:
+---
 
-```sh
+## 🛠 Tech Stack
+
+| Layer | Technology |
+| :--- | :--- |
+| **Monorepo** | [Nx](https://nx.dev) |
+| **Frontend** | [Angular](https://angular.dev) (Signals, SCSS BEM) |
+| **Backend** | [NestJS](https://nestjs.com) (REST, Swagger) |
+| **Database** | [PostgreSQL](https://www.postgresql.org/) + [Prisma](https://prisma.io/) |
+| **Containerization** | [Docker Compose](https://docs.docker.com/compose/) |
+| **AI Strategy** | [Ollama](https://ollama.com/) (Local LLM) |
+
+---
+
+## 🏁 Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (LTS)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [Nx CLI](https://nx.dev/getting-started/installation) (Optional, `npm exec nx` is used locally)
+
+### 1. Environment Setup
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+### 2. Infrastructure
+
+Start the local PostgreSQL database:
+
+```bash
 docker compose -f docker-compose.dev.yml up -d postgres
 ```
 
-3. Generate Prisma Client:
+### 3. Database Migration
 
-```sh
-node node_modules/prisma/build/index.js generate
+Initialize the database and generate the Prisma client:
+
+```bash
+# Generate Prisma Client
+npm exec nx generate-client api
+
+# Apply Migrations
+npm exec nx migrate-dev api
 ```
 
-4. Apply migrations:
+### 4. Development Servers
 
-```sh
-node node_modules/prisma/build/index.js migrate dev --name init_taskmind_core
+Launch the frontend and backend in parallel:
+
+```bash
+# Start API
+npm exec nx serve api
+
+# Start Web Studio
+npm exec nx serve web
 ```
 
-5. Start the API and web app:
+---
 
-```sh
-node node_modules/nx/dist/bin/nx.js serve api
-node node_modules/nx/dist/bin/nx.js serve web
+## 📂 Repository Structure
+
+```text
+├── apps/
+│   ├── web/          # Angular frontend (Document Studio)
+│   ├── api/          # NestJS backend (REST API)
+│   └── ai/           # (Planned) FastAPI service for AI logic
+├── libs/
+│   ├── shared/       # Common DTOs and domain types
+│   ├── ui/           # Reusable Angular components
+│   └── config/       # Shared environment & config helpers
+├── prisma/           # Schema definitions and migrations
+├── docker/           # Container configurations
+└── docs/             # Product & Architecture documentation
 ```
+
+---
+
+## 🎯 MVP 0 Roadmap & Constraints
+
+### In-Scope (Document Studio)
+- ✅ Workspace & Document Management
+- ✅ Text Parsing & Selection Logic
+- ✅ Manual Annotations & Operational Rules
+- ✅ Teaching Memory (Correction Loops)
+- ✅ Applicability-Aware Logic (Graceful Failure)
+
+### Non-Goals for MVP 0
+- ❌ Authentication / User Accounts
+- ❌ OCR (Optical Character Recognition)
+- ❌ RAG (Retrieval-Augmented Generation)
+- ❌ LLM Fine-tuning
+- ❌ Real-time WebSockets
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on our development workflow and coding standards.
+
+## 📄 License
+
+This project is proprietary and confidential. See LICENSE for details (if applicable).
