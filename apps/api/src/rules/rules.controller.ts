@@ -49,7 +49,7 @@ export class RulesController {
     @Param('workspaceId') workspaceId: string,
     @Body(new ValidationPipe({ whitelist: true, transform: true }))
     createRuleDto: CreateOperationalRuleDto,
-  ): OperationalRule {
+  ): Promise<OperationalRule> {
     return this.rulesService.create(workspaceId, createRuleDto);
   }
 
@@ -68,8 +68,24 @@ export class RulesController {
   @ApiNotFoundResponse({ description: 'Workspace was not found.' })
   findByWorkspace(
     @Param('workspaceId') workspaceId: string,
-  ): OperationalRule[] {
+  ): Promise<OperationalRule[]> {
     return this.rulesService.findByWorkspace(workspaceId);
+  }
+
+  @Get('rules/:ruleId')
+  @ApiOperation({ summary: 'Get an operational rule by id' })
+  @ApiParam({
+    name: 'ruleId',
+    description: 'Operational rule id.',
+    example: '3f64d20c-ae9a-4c06-bb62-b71f65d10c75',
+  })
+  @ApiOkResponse({
+    description: 'Operational rule found.',
+    type: OperationalRuleDto,
+  })
+  @ApiNotFoundResponse({ description: 'Operational rule was not found.' })
+  findOne(@Param('ruleId') ruleId: string): Promise<OperationalRule> {
+    return this.rulesService.findOne(ruleId);
   }
 
   @Delete('rules/:ruleId')
@@ -82,7 +98,7 @@ export class RulesController {
   })
   @ApiNoContentResponse({ description: 'Operational rule deleted.' })
   @ApiNotFoundResponse({ description: 'Operational rule was not found.' })
-  remove(@Param('ruleId') ruleId: string): void {
-    this.rulesService.remove(ruleId);
+  remove(@Param('ruleId') ruleId: string): Promise<void> {
+    return this.rulesService.remove(ruleId);
   }
 }

@@ -50,6 +50,18 @@ export class AnnotationDto implements Annotation {
   })
   endOffset?: number;
 
+  @ApiPropertyOptional({
+    description: 'Nearby extracted text before the selected text.',
+    example: 'Invoice details:',
+  })
+  contextBefore?: string;
+
+  @ApiPropertyOptional({
+    description: 'Nearby extracted text after the selected text.',
+    example: 'Amount due follows below.',
+  })
+  contextAfter?: string;
+
   @ApiProperty({
     description: 'ISO timestamp for when the annotation was created.',
     example: '2026-05-10T10:15:20.085Z',

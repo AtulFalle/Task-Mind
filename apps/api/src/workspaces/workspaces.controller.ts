@@ -37,7 +37,7 @@ export class WorkspacesController {
   create(
     @Body(new ValidationPipe({ whitelist: true, transform: true }))
     createWorkspaceDto: CreateWorkspaceDto,
-  ): Workspace {
+  ): Promise<Workspace> {
     return this.workspacesService.create(createWorkspaceDto);
   }
 
@@ -48,7 +48,7 @@ export class WorkspacesController {
     type: WorkspaceDto,
     isArray: true,
   })
-  findAll(): Workspace[] {
+  findAll(): Promise<Workspace[]> {
     return this.workspacesService.findAll();
   }
 
@@ -64,7 +64,7 @@ export class WorkspacesController {
     type: WorkspaceDto,
   })
   @ApiNotFoundResponse({ description: 'Workspace was not found.' })
-  findOne(@Param('id') id: string): Workspace {
+  findOne(@Param('id') id: string): Promise<Workspace> {
     return this.workspacesService.findOne(id);
   }
 
@@ -85,7 +85,7 @@ export class WorkspacesController {
     @Param('id') id: string,
     @Body(new ValidationPipe({ whitelist: true, transform: true }))
     updateWorkspaceDto: UpdateWorkspaceDto,
-  ): Workspace {
+  ): Promise<Workspace> {
     return this.workspacesService.update(id, updateWorkspaceDto);
   }
 }

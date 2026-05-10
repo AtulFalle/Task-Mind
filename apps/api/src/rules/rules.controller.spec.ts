@@ -10,6 +10,7 @@ describe('RulesController', () => {
   const rulesService = {
     create: jest.fn(),
     findByWorkspace: jest.fn(),
+    findOne: jest.fn(),
     remove: jest.fn(),
   };
 
@@ -91,6 +92,31 @@ describe('RulesController', () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual([]);
     expect(rulesService.findByWorkspace).toHaveBeenCalledWith('workspace-1');
+  });
+
+  it('routes GET /api/rules/:ruleId to rule retrieval', async () => {
+    rulesService.findOne.mockReturnValue({
+      id: 'rule-1',
+      workspaceId: 'workspace-1',
+      title: 'Experience section structure',
+      ruleText:
+        'Experience section usually contains role title, company name, duration, and short description.',
+      category: RuleCategory.EXTRACTION,
+      source: RuleSource.HUMAN,
+      confidence: 1,
+      createdAt: '2026-05-10T11:15:20.085Z',
+      updatedAt: '2026-05-10T11:15:20.085Z',
+    });
+
+    const response = await fetch(`${thisServerUrl(app)}/api/rules/rule-1`);
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      id: 'rule-1',
+      workspaceId: 'workspace-1',
+      title: 'Experience section structure',
+    });
+    expect(rulesService.findOne).toHaveBeenCalledWith('rule-1');
   });
 
   it('routes DELETE /api/rules/:ruleId to rule removal', async () => {

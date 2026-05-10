@@ -51,7 +51,7 @@ export class AnnotationsController {
     @Param('documentId') documentId: string,
     @Body(new ValidationPipe({ whitelist: true, transform: true }))
     createAnnotationDto: CreateAnnotationDto,
-  ): Annotation {
+  ): Promise<Annotation> {
     return this.annotationsService.create(documentId, createAnnotationDto);
   }
 
@@ -68,7 +68,9 @@ export class AnnotationsController {
     isArray: true,
   })
   @ApiNotFoundResponse({ description: 'Document was not found.' })
-  findByDocument(@Param('documentId') documentId: string): Annotation[] {
+  findByDocument(
+    @Param('documentId') documentId: string,
+  ): Promise<Annotation[]> {
     return this.annotationsService.findByDocument(documentId);
   }
 
@@ -92,7 +94,7 @@ export class AnnotationsController {
     @Param('annotationId') annotationId: string,
     @Body(new ValidationPipe({ whitelist: true, transform: true }))
     updateAnnotationDto: UpdateAnnotationDto,
-  ): Annotation {
+  ): Promise<Annotation> {
     return this.annotationsService.update(annotationId, updateAnnotationDto);
   }
 
@@ -106,7 +108,7 @@ export class AnnotationsController {
   })
   @ApiNoContentResponse({ description: 'Annotation deleted.' })
   @ApiNotFoundResponse({ description: 'Annotation was not found.' })
-  remove(@Param('annotationId') annotationId: string): void {
-    this.annotationsService.remove(annotationId);
+  remove(@Param('annotationId') annotationId: string): Promise<void> {
+    return this.annotationsService.remove(annotationId);
   }
 }

@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -15,6 +16,7 @@ async function bootstrap() {
     .setVersion('0.1.0')
     .addTag('health', 'API health checks')
     .addTag('workspaces', 'Document Studio workspace management')
+    .addTag('feedback', 'Teaching memory feedback events')
     .build();
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup(`${globalPrefix}/docs`, app, swaggerDocument);

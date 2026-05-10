@@ -3,6 +3,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute } from '@angular/router';
 import type { CreateOperationalRuleRequest } from '@task-mind/shared';
 import { OperationalRulesPanelComponent } from '../../../workspaces/components/operational-rules-panel/operational-rules-panel.component';
+import { TeachingMemoryPanelComponent } from '../../../workspaces/components/teaching-memory-panel/teaching-memory-panel.component';
 import { WorkspaceService } from '../../../workspaces/workspace.service';
 import { DocumentListComponent } from '../../components/document-list/document-list.component';
 import { DocumentUploadComponent } from '../../components/document-upload/document-upload.component';
@@ -17,6 +18,7 @@ import { DocumentStudioService } from '../../services/document-studio.service';
     DocumentUploadComponent,
     DocumentListComponent,
     OperationalRulesPanelComponent,
+    TeachingMemoryPanelComponent,
   ],
   templateUrl: './workspace-detail.component.html',
   styleUrl: './workspace-detail.component.scss',
@@ -30,17 +32,17 @@ export class WorkspaceDetailComponent {
   protected readonly workspaceId = computed(() =>
     this.route.snapshot.paramMap.get('workspaceId'),
   );
-  protected readonly workspaceResource = this.workspaceService.getWorkspaceResource(
-    this.workspaceId,
-    this.injector,
-  );
+  protected readonly workspaceResource =
+    this.workspaceService.getWorkspaceResource(this.workspaceId, this.injector);
   protected readonly workspace = this.workspaceResource.value;
   protected readonly workspaceErrorMessage = computed(() => {
     if (!this.workspaceId()) {
       return 'Workspace id is missing.';
     }
 
-    return this.workspaceResource.error() ? 'Workspace could not be loaded.' : '';
+    return this.workspaceResource.error()
+      ? 'Workspace could not be loaded.'
+      : '';
   });
   protected readonly documentsResource =
     this.documentStudioService.getWorkspaceDocumentsResource(
@@ -53,6 +55,12 @@ export class WorkspaceDetailComponent {
     this.injector,
   );
   protected readonly rules = this.rulesResource.value;
+  protected readonly feedbackEventsResource =
+    this.workspaceService.getWorkspaceFeedbackEvents(
+      this.workspaceId,
+      this.injector,
+    );
+  protected readonly feedbackEvents = this.feedbackEventsResource.value;
   protected readonly isSavingRule = signal(false);
   protected readonly ruleSaveError = signal('');
   protected readonly deletingRuleId = signal<string | null>(null);
@@ -62,8 +70,14 @@ export class WorkspaceDetailComponent {
   protected readonly rulesErrorMessage = computed(() =>
     this.rulesResource.error() ? 'Operational rules could not be loaded.' : '',
   );
+  protected readonly feedbackEventsErrorMessage = computed(() =>
+    this.feedbackEventsResource.error()
+      ? 'Teaching memory could not be loaded.'
+      : '',
+  );
   protected readonly handleDocumentUploaded = () => {
     this.documentsResource.reload();
+    this.feedbackEventsResource.reload();
   };
 
   protected async createRule(
@@ -81,6 +95,7 @@ export class WorkspaceDetailComponent {
     try {
       await this.workspaceService.createRule(workspaceId, payload);
       this.rulesResource.reload();
+      this.feedbackEventsResource.reload();
     } catch {
       this.ruleSaveError.set('Operational rule could not be saved.');
     } finally {
@@ -98,6 +113,7 @@ export class WorkspaceDetailComponent {
     try {
       await this.workspaceService.deleteRule(ruleId);
       this.rulesResource.reload();
+      this.feedbackEventsResource.reload();
     } finally {
       this.deletingRuleId.set(null);
     }

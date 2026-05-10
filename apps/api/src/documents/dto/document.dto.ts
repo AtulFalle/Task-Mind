@@ -56,7 +56,7 @@ export class DocumentDto implements Document {
   status!: DocumentStatus;
 
   @ApiProperty({
-    description: 'Extracted plain text held in memory for MVP 0.',
+    description: 'Extracted plain text stored for this document.',
     nullable: true,
     example: 'Invoice #1001\nTotal: $245.00',
   })

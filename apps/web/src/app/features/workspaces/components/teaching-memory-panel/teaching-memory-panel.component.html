@@ -1,0 +1,27 @@
+<section class="teaching-memory-panel" aria-labelledby="teaching-memory-title">
+  <div class="teaching-memory-panel__header">
+    <h2 id="teaching-memory-title">Teaching Memory</h2>
+    <p>This timeline captures how you are teaching TaskMindAI.</p>
+  </div>
+
+  @if (isLoading()) {
+    <div class="teaching-memory-panel__state">
+      <mat-spinner diameter="32"></mat-spinner>
+    </div>
+  } @else if (errorMessage()) {
+    <p class="teaching-memory-panel__error">{{ errorMessage() }}</p>
+  } @else if (events().length > 0) {
+    <div class="teaching-memory-panel__timeline">
+      @for (event of events(); track event.id) {
+        <app-feedback-event-card [event]="event"></app-feedback-event-card>
+      }
+    </div>
+  } @else {
+    <div class="teaching-memory-panel__state">
+      <p>
+        No teaching activity yet. Upload documents, create annotations, or add
+        rules to begin teaching TaskMindAI.
+      </p>
+    </div>
+  }
+</section>

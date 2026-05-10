@@ -12,6 +12,7 @@ import {
 import { randomUUID } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { extname, join, resolve } from 'node:path';
+import { PrismaService } from '../prisma/prisma.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { DocumentTextParserService } from './document-text-parser.service';
 
@@ -20,9 +21,8 @@ const STORAGE_PATH_PREFIX = join('storage', 'documents');
 
 @Injectable()
 export class DocumentsService {
-  private readonly documents = new Map<string, Document>();
-
   constructor(
+    private readonly prisma: PrismaService,
     private readonly workspacesService: WorkspacesService,
     private readonly documentTextParserService: DocumentTextParserService,
   ) {}
@@ -31,7 +31,7 @@ export class DocumentsService {
     workspaceId: string,
     file: Express.Multer.File | undefined,
   ): Promise<Document> {
-    this.workspacesService.findOne(workspaceId);
+    await this.workspacesService.findOne(workspaceId);
 
     if (!file) {
       throw new BadRequestException('A document file is required.');
@@ -45,48 +45,63 @@ export class DocumentsService {
 
     await writeFile(absoluteFilePath, file.buffer);
 
-    const now = new Date().toISOString();
-    const document: Document = {
-      id,
-      workspaceId,
-      originalName: file.originalname,
-      fileName,
-      mimeType: file.mimetype,
-      size: file.size,
-      filePath: join(STORAGE_PATH_PREFIX, fileName),
-      status: DocumentStatus.UPLOADED,
-      extractedText: null,
-      extractedTextStatus: ExtractedTextStatus.NOT_STARTED,
-      createdAt: now,
-      updatedAt: now,
-    };
+    const document = await this.prisma.document.create({
+      data: {
+        id,
+        workspaceId,
+        originalName: file.originalname,
+        fileName,
+        mimeType: file.mimetype,
+        size: file.size,
+        filePath: join(STORAGE_PATH_PREFIX, fileName),
+        status: DocumentStatus.PARSING_PENDING,
+        extractedTextStatus: ExtractedTextStatus.NOT_STARTED,
+      },
+    });
 
-    this.documents.set(document.id, document);
+    await this.prisma.feedbackEvent.create({
+      data: {
+        workspaceId,
+        documentId: document.id,
+        eventType: 'DOCUMENT_UPLOADED',
+        payloadJson: {
+          originalName: document.originalName,
+          mimeType: document.mimeType,
+          size: document.size,
+        },
+      },
+    });
+
     await this.extractText(document, absoluteFilePath);
 
     return this.findOne(document.id);
   }
 
-  findByWorkspace(workspaceId: string): Document[] {
-    this.workspacesService.findOne(workspaceId);
+  async findByWorkspace(workspaceId: string): Promise<Document[]> {
+    await this.workspacesService.findOne(workspaceId);
 
-    return Array.from(this.documents.values())
-      .filter((document) => document.workspaceId === workspaceId)
-      .sort((first, second) => second.createdAt.localeCompare(first.createdAt));
+    const documents = await this.prisma.document.findMany({
+      where: { workspaceId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return documents.map((document) => this.toDocument(document));
   }
 
-  findOne(documentId: string): Document {
-    const document = this.documents.get(documentId);
+  async findOne(documentId: string): Promise<Document> {
+    const document = await this.prisma.document.findUnique({
+      where: { id: documentId },
+    });
 
     if (!document) {
       throw new NotFoundException(`Document ${documentId} was not found.`);
     }
 
-    return document;
+    return this.toDocument(document);
   }
 
-  getText(documentId: string): DocumentTextResponse {
-    const document = this.findOne(documentId);
+  async getText(documentId: string): Promise<DocumentTextResponse> {
+    const document = await this.findOne(documentId);
 
     return {
       documentId: document.id,
@@ -97,12 +112,17 @@ export class DocumentsService {
   }
 
   private async extractText(
-    document: Document,
+    document: {
+      id: string;
+      workspaceId: string;
+      mimeType: string;
+      status: Document['status'];
+    },
     absoluteFilePath: string,
   ): Promise<void> {
-    this.updateExtraction(document, {
+    await this.updateExtraction(document, {
       extractedTextStatus: ExtractedTextStatus.PROCESSING,
-      extractionError: undefined,
+      extractionError: null,
     });
 
     try {
@@ -111,17 +131,30 @@ export class DocumentsService {
         document.mimeType,
       );
 
-      this.updateExtraction(document, {
+      const updatedDocument = await this.updateExtraction(document, {
         extractedText: parsedText.text,
         extractedTextStatus: parsedText.status,
-        extractionError: parsedText.error,
+        extractionError: parsedText.error || null,
         status:
           parsedText.status === ExtractedTextStatus.COMPLETED
             ? DocumentStatus.PARSED
             : document.status,
       });
+
+      await this.prisma.feedbackEvent.create({
+        data: {
+          workspaceId: document.workspaceId,
+          documentId: document.id,
+          eventType: 'TEXT_EXTRACTED',
+          payloadJson: {
+            status: updatedDocument.extractedTextStatus,
+            textLength: updatedDocument.extractedText?.length ?? 0,
+            error: updatedDocument.extractionError,
+          },
+        },
+      });
     } catch (error) {
-      this.updateExtraction(document, {
+      await this.updateExtraction(document, {
         extractedText: null,
         extractedTextStatus: ExtractedTextStatus.FAILED,
         extractionError:
@@ -134,25 +167,49 @@ export class DocumentsService {
   }
 
   private updateExtraction(
-    document: Document,
+    document: { id: string },
     update: Partial<
-      Pick<
-        Document,
-        | 'extractedText'
-        | 'extractedTextStatus'
-        | 'extractionError'
-        | 'status'
-        | 'updatedAt'
-      >
-    >,
-  ): void {
-    const updatedDocument: Document = {
-      ...document,
-      ...update,
-      updatedAt: new Date().toISOString(),
-    };
+      Pick<Document, 'extractedText' | 'extractedTextStatus' | 'status'>
+    > & {
+      extractionError?: string | null;
+    },
+  ) {
+    return this.prisma.document.update({
+      where: { id: document.id },
+      data: update,
+    });
+  }
 
-    this.documents.set(document.id, updatedDocument);
+  private toDocument(document: {
+    id: string;
+    workspaceId: string;
+    originalName: string;
+    fileName: string;
+    mimeType: string;
+    size: number;
+    filePath: string;
+    status: Document['status'];
+    extractedText: string | null;
+    extractedTextStatus: Document['extractedTextStatus'];
+    extractionError: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }): Document {
+    return {
+      id: document.id,
+      workspaceId: document.workspaceId,
+      originalName: document.originalName,
+      fileName: document.fileName,
+      mimeType: document.mimeType,
+      size: document.size,
+      filePath: document.filePath,
+      status: document.status,
+      extractedText: document.extractedText,
+      extractedTextStatus: document.extractedTextStatus,
+      extractionError: document.extractionError || undefined,
+      createdAt: document.createdAt.toISOString(),
+      updatedAt: document.updatedAt.toISOString(),
+    };
   }
 
   private getSafeExtension(originalName: string): string {

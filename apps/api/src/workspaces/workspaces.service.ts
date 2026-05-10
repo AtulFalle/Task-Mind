@@ -4,56 +4,75 @@ import type {
   UpdateWorkspaceRequest,
   Workspace,
 } from '@task-mind/shared';
-import { randomUUID } from 'node:crypto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class WorkspacesService {
-  private readonly workspaces = new Map<string, Workspace>();
+  constructor(private readonly prisma: PrismaService) {}
 
-  create(createWorkspace: CreateWorkspaceRequest): Workspace {
-    const now = new Date().toISOString();
-    const workspace: Workspace = {
-      id: randomUUID(),
-      name: createWorkspace.name.trim(),
-      description: createWorkspace.description?.trim() || undefined,
-      studioType: createWorkspace.studioType,
-      createdAt: now,
-      updatedAt: now,
-    };
+  async create(createWorkspace: CreateWorkspaceRequest): Promise<Workspace> {
+    const workspace = await this.prisma.workspace.create({
+      data: {
+        name: createWorkspace.name.trim(),
+        description: createWorkspace.description?.trim() || null,
+        studioType: createWorkspace.studioType,
+      },
+    });
 
-    this.workspaces.set(workspace.id, workspace);
-
-    return workspace;
+    return this.toWorkspace(workspace);
   }
 
-  findAll(): Workspace[] {
-    return Array.from(this.workspaces.values()).sort((first, second) =>
-      second.createdAt.localeCompare(first.createdAt),
-    );
+  async findAll(): Promise<Workspace[]> {
+    const workspaces = await this.prisma.workspace.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return workspaces.map((workspace) => this.toWorkspace(workspace));
   }
 
-  findOne(id: string): Workspace {
-    const workspace = this.workspaces.get(id);
+  async findOne(id: string): Promise<Workspace> {
+    const workspace = await this.prisma.workspace.findUnique({ where: { id } });
 
     if (!workspace) {
       throw new NotFoundException(`Workspace ${id} was not found.`);
     }
 
-    return workspace;
+    return this.toWorkspace(workspace);
   }
 
-  update(id: string, updateWorkspace: UpdateWorkspaceRequest): Workspace {
-    const workspace = this.findOne(id);
-    const updatedWorkspace: Workspace = {
-      ...workspace,
-      name: updateWorkspace.name.trim(),
-      description: updateWorkspace.description?.trim() || undefined,
-      studioType: updateWorkspace.studioType,
-      updatedAt: new Date().toISOString(),
+  async update(
+    id: string,
+    updateWorkspace: UpdateWorkspaceRequest,
+  ): Promise<Workspace> {
+    await this.findOne(id);
+
+    const workspace = await this.prisma.workspace.update({
+      where: { id },
+      data: {
+        name: updateWorkspace.name.trim(),
+        description: updateWorkspace.description?.trim() || null,
+        studioType: updateWorkspace.studioType,
+      },
+    });
+
+    return this.toWorkspace(workspace);
+  }
+
+  private toWorkspace(workspace: {
+    id: string;
+    name: string;
+    description: string | null;
+    studioType: Workspace['studioType'];
+    createdAt: Date;
+    updatedAt: Date;
+  }): Workspace {
+    return {
+      id: workspace.id,
+      name: workspace.name,
+      description: workspace.description || undefined,
+      studioType: workspace.studioType,
+      createdAt: workspace.createdAt.toISOString(),
+      updatedAt: workspace.updatedAt.toISOString(),
     };
-
-    this.workspaces.set(id, updatedWorkspace);
-
-    return updatedWorkspace;
   }
 }
