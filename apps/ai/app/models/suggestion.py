@@ -1,4 +1,14 @@
+from enum import Enum
+
 from pydantic import BaseModel, Field, field_validator
+
+
+class DocumentType(str, Enum):
+    INVOICE = "INVOICE"
+    RESUME = "RESUME"
+    BANK_STATEMENT = "BANK_STATEMENT"
+    SUPPORT_EMAIL = "SUPPORT_EMAIL"
+    UNKNOWN = "UNKNOWN"
 
 
 class AnnotationSuggestion(BaseModel):
@@ -10,6 +20,33 @@ class AnnotationSuggestion(BaseModel):
     @field_validator("field_name", "selected_text", "reasoning")
     @classmethod
     def trim_text(cls, value: str) -> str:
+        return value.strip()
+
+    model_config = {"populate_by_name": True}
+
+
+class ApplicabilityResult(BaseModel):
+    is_applicable: bool = Field(alias="isApplicable")
+    matched_signals: list[str] = Field(alias="matchedSignals", default_factory=list)
+    missing_signals: list[str] = Field(alias="missingSignals", default_factory=list)
+
+    @field_validator("matched_signals", "missing_signals")
+    @classmethod
+    def trim_signals(cls, value: list[str]) -> list[str]:
+        return [signal.strip() for signal in value if signal.strip()]
+
+    model_config = {"populate_by_name": True}
+
+
+class DocumentTypeClassification(BaseModel):
+    document_type: DocumentType = Field(alias="documentType")
+    reasoning: str = Field(min_length=1)
+    confidence: float = Field(ge=0, le=1)
+    applicability: ApplicabilityResult | None = None
+
+    @field_validator("reasoning")
+    @classmethod
+    def trim_reasoning(cls, value: str) -> str:
         return value.strip()
 
     model_config = {"populate_by_name": True}

@@ -6,7 +6,12 @@ from typing import Any
 import httpx
 from pydantic import ValidationError
 
-from app.schemas.suggestions import SuggestAnnotationsResponse
+from app.models.suggestion import DocumentType, DocumentTypeClassification
+from app.schemas.suggestions import (
+    ClassifyDocumentTypeResponse,
+    SuggestAnnotationsResponse,
+    SuggestDocumentClassificationResponse,
+)
 
 
 class OllamaServiceError(RuntimeError):
@@ -20,6 +25,82 @@ class OllamaService:
         self.timeout_seconds = float(os.getenv("OLLAMA_TIMEOUT_SECONDS", "4500"))
 
     async def suggest_annotations(self, prompt: str) -> SuggestAnnotationsResponse:
+        parsed = await self._generate_json(prompt, {"suggestions": []})
+
+        try:
+            return SuggestAnnotationsResponse.model_validate(parsed)
+        except ValidationError:
+            return SuggestAnnotationsResponse(suggestions=[])
+
+    async def classify_document_type(
+        self,
+        prompt: str,
+    ) -> ClassifyDocumentTypeResponse:
+        fallback = {
+            "classification": {
+                "documentType": DocumentType.UNKNOWN.value,
+                "reasoning": "The model did not return a valid classification.",
+                "confidence": 0,
+                "applicability": {
+                    "isApplicable": False,
+                    "matchedSignals": [],
+                    "missingSignals": ["valid model classification"],
+                },
+            },
+        }
+        parsed = await self._generate_json(prompt, fallback)
+
+        try:
+            return ClassifyDocumentTypeResponse.model_validate(parsed)
+        except ValidationError:
+            return ClassifyDocumentTypeResponse(
+                classification=DocumentTypeClassification(
+                    documentType=DocumentType.UNKNOWN,
+                    reasoning="The model did not return a valid classification.",
+                    confidence=0,
+                    applicability={
+                        "isApplicable": False,
+                        "matchedSignals": [],
+                        "missingSignals": ["valid model classification"],
+                    },
+                ),
+            )
+
+    async def suggest_document_classification(
+        self,
+        prompt: str,
+    ) -> SuggestDocumentClassificationResponse:
+        fallback = {
+            "documentType": DocumentType.UNKNOWN.value,
+            "reasoning": "The model did not return a valid classification.",
+            "confidence": 0,
+            "applicability": {
+                "isApplicable": False,
+                "matchedSignals": [],
+                "missingSignals": ["valid model classification"],
+            },
+        }
+        parsed = await self._generate_json(prompt, fallback)
+
+        try:
+            return SuggestDocumentClassificationResponse.model_validate(parsed)
+        except ValidationError:
+            return SuggestDocumentClassificationResponse(
+                documentType=DocumentType.UNKNOWN,
+                reasoning="The model did not return a valid classification.",
+                confidence=0,
+                applicability={
+                    "isApplicable": False,
+                    "matchedSignals": [],
+                    "missingSignals": ["valid model classification"],
+                },
+            )
+
+    async def _generate_json(
+        self,
+        prompt: str,
+        fallback: dict[str, Any],
+    ) -> dict[str, Any]:
         payload = {
             "model": self.model,
             "prompt": prompt,
@@ -45,24 +126,23 @@ class OllamaService:
             ) from error
 
         raw_response = response.json().get("response", "")
-        parsed = self._parse_json_response(raw_response)
+        return self._parse_json_response(raw_response, fallback)
 
-        try:
-            return SuggestAnnotationsResponse.model_validate(parsed)
-        except ValidationError:
-            return SuggestAnnotationsResponse(suggestions=[])
-
-    def _parse_json_response(self, raw_response: str) -> dict[str, Any]:
+    def _parse_json_response(
+        self,
+        raw_response: str,
+        fallback: dict[str, Any],
+    ) -> dict[str, Any]:
         try:
             parsed = json.loads(raw_response)
-            return parsed if isinstance(parsed, dict) else {"suggestions": []}
+            return parsed if isinstance(parsed, dict) else fallback
         except json.JSONDecodeError:
             match = re.search(r"\{.*\}", raw_response, flags=re.DOTALL)
             if not match:
-                return {"suggestions": []}
+                return fallback
 
             try:
                 parsed = json.loads(match.group(0))
-                return parsed if isinstance(parsed, dict) else {"suggestions": []}
+                return parsed if isinstance(parsed, dict) else fallback
             except json.JSONDecodeError:
-                return {"suggestions": []}
+                return fallback

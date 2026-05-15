@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import type { AiSuggestion } from '@task-mind/shared';
-import { AiSuggestionStatus } from '@task-mind/shared';
+import { AiSuggestionStatus, SuggestionMode } from '@task-mind/shared';
 
 export class AiAnnotationSuggestionDto implements AiSuggestion {
   @ApiProperty({
@@ -54,6 +54,23 @@ export class AiAnnotationSuggestionDto implements AiSuggestion {
   confidence!: number;
 
   @ApiProperty({
+    description: 'Suggestion workflow mode.',
+    enum: SuggestionMode,
+    example: SuggestionMode.EXTRACTION,
+  })
+  mode!: SuggestionMode;
+
+  @ApiProperty({
+    description: 'Mode-specific suggestion payload.',
+    example: {
+      documentType: 'INVOICE',
+      reasoning: 'Contains invoice number, amount, and due date.',
+      confidence: 0.82,
+    },
+  })
+  payloadJson!: Record<string, unknown>;
+
+  @ApiProperty({
     description: 'Human review status for this AI suggestion.',
     enum: AiSuggestionStatus,
     example: AiSuggestionStatus.PENDING,
@@ -77,6 +94,16 @@ export class AiAnnotationSuggestionDto implements AiSuggestion {
     example: 'The field should capture the numeric years only.',
   })
   correctedReasoning?: string;
+
+  @ApiPropertyOptional({
+    description: 'Mode-specific human-corrected payload.',
+    example: {
+      documentType: 'UNKNOWN',
+      reasoning: 'Does not match any learned workflow.',
+      confidence: 0.82,
+    },
+  })
+  correctedPayloadJson?: Record<string, unknown>;
 
   @ApiProperty({
     description: 'Creation timestamp.',

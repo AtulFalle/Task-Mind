@@ -1,0 +1,110 @@
+<section class="validation-flow" aria-labelledby="validation-flow-title">
+  <header class="validation-flow__header">
+    <a mat-button [routerLink]="['/workspaces', workspaceId()]">
+      <mat-icon aria-hidden="true">arrow_back</mat-icon>
+      Back to workspace
+    </a>
+
+    <div>
+      <p class="validation-flow__eyebrow">Validation Mode</p>
+      <h1 id="validation-flow-title">End-to-end product validation</h1>
+      <p>
+        TaskMindAI is learning through prompt-injected teaching memory. This
+        screen helps validate whether corrections are being reused.
+      </p>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <div class="validation-flow__status">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else if (errorMessage()) {
+    <p class="validation-flow__error">{{ errorMessage() }}</p>
+  } @else {
+    <section class="validation-flow__panel" aria-labelledby="setup-checklist-title">
+      <div class="validation-flow__section-header">
+        <h2 id="setup-checklist-title">Setup Checklist</h2>
+        <p>Use this to confirm the workspace is ready for a manual run.</p>
+      </div>
+
+      <ul class="validation-flow__checklist">
+        @for (item of checklist(); track item.label) {
+          <li [class.validation-flow__checklist-item--complete]="item.complete">
+            <mat-icon aria-hidden="true">
+              {{ item.complete ? 'check_circle' : 'radio_button_unchecked' }}
+            </mat-icon>
+            <span>{{ item.label }}</span>
+          </li>
+        }
+      </ul>
+    </section>
+
+    <section class="validation-flow__panel" aria-labelledby="guide-title">
+      <div class="validation-flow__section-header">
+        <h2 id="guide-title">Step-by-step guide</h2>
+        <p>Run this manually so you can inspect every correction and AI result.</p>
+      </div>
+
+      <ol class="validation-flow__steps">
+        @for (step of steps; track step.title) {
+          <li>
+            <h3>{{ step.title }}</h3>
+            <p>{{ step.body }}</p>
+          </li>
+        }
+      </ol>
+    </section>
+
+    <section class="validation-flow__grid" aria-label="Validation evidence">
+      <div class="validation-flow__panel">
+        <div class="validation-flow__section-header">
+          <h2>Current Metrics</h2>
+          <p>These reuse the workspace validation metrics already tracked.</p>
+        </div>
+
+        <dl class="validation-flow__stats">
+          @for (stat of metricStats(); track stat.label) {
+            <div class="validation-flow__stat">
+              <dt>{{ stat.label }}</dt>
+              <dd>{{ stat.value }}</dd>
+            </div>
+          }
+        </dl>
+      </div>
+
+      <div class="validation-flow__panel">
+        <div class="validation-flow__section-header">
+          <h2>Recent AI Context Evidence</h2>
+          <p>Latest classification call context stored on the AI suggestion.</p>
+        </div>
+
+        <dl class="validation-flow__stats validation-flow__stats--context">
+          @for (stat of contextStats(); track stat.label) {
+            <div class="validation-flow__stat">
+              <dt>{{ stat.label }}</dt>
+              <dd>{{ stat.value }}</dd>
+            </div>
+          }
+        </dl>
+      </div>
+    </section>
+
+    <section class="validation-flow__panel" aria-labelledby="run-again-title">
+      <div class="validation-flow__section-header">
+        <h2 id="run-again-title">Manual Run Again Guide</h2>
+        <p>
+          After saving a correction or approval, upload another document and run
+          classification again from the document detail screen. Return here and
+          confirm the latest context stats show rules and prior human feedback
+          examples were included.
+        </p>
+      </div>
+
+      <a mat-flat-button [routerLink]="['/workspaces', workspaceId()]">
+        <mat-icon aria-hidden="true">upload_file</mat-icon>
+        Go to workspace documents
+      </a>
+    </section>
+  }
+</section>

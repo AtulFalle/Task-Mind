@@ -11,12 +11,14 @@ import {
 } from '@nestjs/swagger';
 import type {
   AiAnnotationSuggestionsResponse,
+  AiSuggestionRequest,
   AiSuggestion,
   RejectAiSuggestionRequest,
   UpdateAiSuggestionRequest,
 } from '@task-mind/shared';
 import { AiAnnotationSuggestionsResponseDto } from './dto/ai-annotation-suggestions-response.dto';
 import { AiAnnotationSuggestionDto } from './dto/ai-annotation-suggestion.dto';
+import { AiSuggestionRequestDto } from './dto/ai-suggestion-request.dto';
 import { RejectAiSuggestionDto } from './dto/reject-ai-suggestion.dto';
 import { UpdateAiSuggestionDto } from './dto/update-ai-suggestion.dto';
 import { AiService } from './ai.service';
@@ -28,8 +30,9 @@ export class AiController {
 
   @Post()
   @ApiOperation({
-    summary: 'Ask TaskMindAI for annotation suggestions for a document',
+    summary: 'Ask TaskMindAI for document suggestions',
   })
+  @ApiBody({ type: AiSuggestionRequestDto })
   @ApiParam({
     name: 'documentId',
     description: 'Document id.',
@@ -46,10 +49,11 @@ export class AiController {
   @ApiServiceUnavailableResponse({
     description: 'AI service or local Ollama model is unavailable.',
   })
-  suggestAnnotations(
+  suggest(
     @Param('documentId') documentId: string,
+    @Body() request: AiSuggestionRequest,
   ): Promise<AiAnnotationSuggestionsResponse> {
-    return this.aiService.suggestAnnotations(documentId);
+    return this.aiService.suggest(documentId, request);
   }
 
   @Get()

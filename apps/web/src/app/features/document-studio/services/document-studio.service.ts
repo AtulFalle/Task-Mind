@@ -10,6 +10,7 @@ import {
   type FeedbackEvent,
   type LinkedOperationalRule,
   type RejectAiSuggestionRequest,
+  SuggestionMode,
   type TrainingCandidate,
   type UpdateAnnotationRequest,
   type UpdateAiSuggestionRequest,
@@ -94,11 +95,12 @@ export class DocumentStudioService {
 
   getAiSuggestions(
     documentId: string,
+    mode: SuggestionMode = SuggestionMode.EXTRACTION,
   ): Promise<AiAnnotationSuggestionsResponse> {
     return firstValueFrom(
       this.httpClient.post<AiAnnotationSuggestionsResponse>(
         `/api/documents/${documentId}/ai-suggestions`,
-        {},
+        { mode },
       ),
     );
   }

@@ -9,6 +9,8 @@ import { AiModule } from '../ai/ai.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { RulesModule } from '../rules/rules.module';
 import { TrainingCandidatesModule } from '../training-candidates/training-candidates.module';
+import { ValidationSamplesModule } from '../validation-samples/validation-samples.module';
+import { ValidationRunsModule } from '../validation-runs/validation-runs.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { TrainingCandidatesModule } from '../training-candidates/training-candid
     TrainingCandidatesModule,
     FeedbackModule,
     AiModule,
+    ValidationSamplesModule,
+    ValidationRunsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

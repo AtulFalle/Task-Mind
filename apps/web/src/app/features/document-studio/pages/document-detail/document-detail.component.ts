@@ -14,8 +14,17 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import {
+  AiSuggestionStatus,
+  DocumentType,
+  SuggestionMode,
+  ValidationRunItemStatus,
+  ValidationRunStatus,
+  type AiContextStats,
+  type AiSuggestion,
+} from '@task-mind/shared';
 import type {
-  AiSuggestion,
+  AddValidationRunItemRequest,
   Annotation,
   CreateAnnotationRequest,
   LinkedOperationalRule,
@@ -27,6 +36,7 @@ import { WorkspaceService } from '../../../workspaces/workspace.service';
 import { AiSuggestionsPanelComponent } from '../../components/ai-suggestions-panel/ai-suggestions-panel.component';
 import { AnnotationDialogComponent } from '../../components/annotation-dialog/annotation-dialog.component';
 import { AnnotationsPanelComponent } from '../../components/annotations-panel/annotations-panel.component';
+import { ClassificationModePanelComponent } from '../../components/classification-mode-panel/classification-mode-panel.component';
 import { DocumentTextViewerComponent } from '../../components/document-text-viewer/document-text-viewer.component';
 import type { SelectedDocumentText } from '../../models/document-studio.models';
 import { DocumentStudioService } from '../../services/document-studio.service';
@@ -43,6 +53,7 @@ import { DocumentStudioService } from '../../services/document-studio.service';
     MatProgressSpinnerModule,
     AiSuggestionsPanelComponent,
     AnnotationsPanelComponent,
+    ClassificationModePanelComponent,
     DocumentTextViewerComponent,
     TeachingMemoryPanelComponent,
   ],
@@ -83,17 +94,47 @@ export class DocumentDetailComponent {
     );
   protected readonly workspaceRulesResource =
     this.workspaceService.getWorkspaceRules(this.workspaceId, this.injector);
+  protected readonly validationRunsResource =
+    this.workspaceService.getWorkspaceValidationRuns(
+      this.workspaceId,
+      this.injector,
+    );
   protected readonly document = this.documentResource.value;
   protected readonly documentText = this.documentTextResource.value;
   protected readonly annotations = this.annotationsResource.value;
   protected readonly feedbackEvents = this.feedbackEventsResource.value;
   protected readonly workspaceRules = this.workspaceRulesResource.value;
+  protected readonly validationRuns = this.validationRunsResource.value;
   protected readonly isSavingAnnotation = signal(false);
   protected readonly isLoadingAiSuggestions = signal(false);
+  protected readonly isLoadingClassification = signal(false);
   protected readonly isRecordingAiFeedback = signal(false);
   protected readonly annotationSaveError = signal('');
   protected readonly aiSuggestionError = signal('');
+  protected readonly validationRunItemError = signal('');
   protected readonly aiSuggestions = signal<AiSuggestion[]>([]);
+  protected readonly classificationContextStats = signal<AiContextStats | null>(
+    null,
+  );
+  protected readonly extractionSuggestions = computed(() =>
+    this.aiSuggestions().filter(
+      (suggestion) => suggestion.mode === SuggestionMode.EXTRACTION,
+    ),
+  );
+  protected readonly latestClassificationSuggestion = computed(
+    () =>
+      this.aiSuggestions().find(
+        (suggestion) =>
+          suggestion.mode === SuggestionMode.DOCUMENT_CLASSIFICATION,
+      ) ?? null,
+  );
+  protected readonly activeValidationRuns = computed(() =>
+    this.validationRuns().filter(
+      (run) =>
+        run.status === ValidationRunStatus.DRAFT ||
+        run.status === ValidationRunStatus.RUNNING,
+    ),
+  );
   protected readonly deletingAnnotationId = signal<string | null>(null);
   protected readonly linkingRuleAnnotationId = signal<string | null>(null);
   protected readonly creatingCandidateAnnotationId = signal<string | null>(
@@ -197,7 +238,12 @@ export class DocumentDetailComponent {
     try {
       const response =
         await this.documentStudioService.getAiSuggestions(documentId);
-      this.aiSuggestions.set(response.suggestions);
+      this.aiSuggestions.update((suggestions) => [
+        ...response.suggestions,
+        ...suggestions.filter(
+          (suggestion) => suggestion.mode !== SuggestionMode.EXTRACTION,
+        ),
+      ]);
       this.feedbackEventsResource.reload();
     } catch {
       this.aiSuggestionError.set(
@@ -205,6 +251,39 @@ export class DocumentDetailComponent {
       );
     } finally {
       this.isLoadingAiSuggestions.set(false);
+    }
+  }
+
+  protected async classifyDocumentType(): Promise<void> {
+    const documentId = this.documentId();
+
+    if (!documentId || this.isLoadingClassification()) {
+      return;
+    }
+
+    this.isLoadingClassification.set(true);
+    this.aiSuggestionError.set('');
+
+    try {
+      const response = await this.documentStudioService.getAiSuggestions(
+        documentId,
+        SuggestionMode.DOCUMENT_CLASSIFICATION,
+      );
+      this.aiSuggestions.update((suggestions) => [
+        ...response.suggestions,
+        ...suggestions.filter(
+          (suggestion) =>
+            suggestion.mode !== SuggestionMode.DOCUMENT_CLASSIFICATION,
+        ),
+      ]);
+      this.classificationContextStats.set(response.contextStats ?? null);
+      this.feedbackEventsResource.reload();
+    } catch {
+      this.aiSuggestionError.set(
+        'Document type classification could not be generated right now.',
+      );
+    } finally {
+      this.isLoadingClassification.set(false);
     }
   }
 
@@ -245,6 +324,29 @@ export class DocumentDetailComponent {
 
     this.annotationsResource.reload();
     this.feedbackEventsResource.reload();
+  }
+
+  protected async addClassificationToValidationRun(event: {
+    runId: string;
+    expectedLabel: DocumentType;
+    suggestion: AiSuggestion;
+  }): Promise<void> {
+    const payload = this.toValidationRunItemRequest(
+      event.suggestion,
+      event.expectedLabel,
+    );
+
+    this.validationRunItemError.set('');
+
+    try {
+      await this.workspaceService.addValidationRunItem(event.runId, payload);
+      this.validationRunsResource.reload();
+      this.feedbackEventsResource.reload();
+    } catch {
+      this.validationRunItemError.set(
+        'Classification result could not be added to the validation run.',
+      );
+    }
   }
 
   protected async deleteAnnotation(annotationId: string): Promise<void> {
@@ -477,5 +579,55 @@ export class DocumentDetailComponent {
     } finally {
       this.isRecordingAiFeedback.set(false);
     }
+  }
+
+  private toValidationRunItemRequest(
+    suggestion: AiSuggestion,
+    expectedLabel: DocumentType,
+  ): AddValidationRunItemRequest {
+    const predictedLabel = this.toDocumentTypeLabel(suggestion.payloadJson);
+    const correctedLabel = suggestion.correctedPayloadJson
+      ? this.toDocumentTypeLabel(suggestion.correctedPayloadJson)
+      : undefined;
+    const status = this.toValidationRunItemStatus(suggestion.status);
+    const finalLabel =
+      status === ValidationRunItemStatus.APPROVED
+        ? predictedLabel
+        : correctedLabel || expectedLabel;
+
+    return {
+      documentId: suggestion.documentId,
+      aiSuggestionId: suggestion.id,
+      expectedLabel,
+      predictedLabel,
+      finalLabel,
+      status,
+    };
+  }
+
+  private toValidationRunItemStatus(
+    status: AiSuggestion['status'],
+  ): AddValidationRunItemRequest['status'] {
+    if (status === AiSuggestionStatus.APPROVED) {
+      return ValidationRunItemStatus.APPROVED;
+    }
+
+    if (status === AiSuggestionStatus.REJECTED) {
+      return ValidationRunItemStatus.REJECTED;
+    }
+
+    if (status === AiSuggestionStatus.EDITED) {
+      return ValidationRunItemStatus.EDITED;
+    }
+
+    return ValidationRunItemStatus.PENDING;
+  }
+
+  private toDocumentTypeLabel(payload: Record<string, unknown>): DocumentType {
+    const documentType = payload['documentType'];
+
+    return Object.values(DocumentType).includes(documentType as DocumentType)
+      ? (documentType as DocumentType)
+      : DocumentType.UNKNOWN;
   }
 }

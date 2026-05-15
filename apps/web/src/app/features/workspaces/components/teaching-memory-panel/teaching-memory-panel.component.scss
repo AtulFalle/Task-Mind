@@ -27,6 +27,9 @@
   &__timeline {
     display: grid;
     gap: 0.85rem;
+    max-height: 34rem;
+    overflow: auto;
+    padding-right: 0.25rem;
   }
 
   &__state {

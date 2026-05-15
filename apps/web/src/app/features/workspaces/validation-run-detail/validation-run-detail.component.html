@@ -1,0 +1,122 @@
+<section class="validation-run-detail" aria-labelledby="validation-run-title">
+  @if (runResource.isLoading()) {
+    <div class="validation-run-detail__status">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else if (errorMessage()) {
+    <p class="validation-run-detail__error">{{ errorMessage() }}</p>
+  } @else if (run(); as run) {
+    <header class="validation-run-detail__header">
+      <a mat-button [routerLink]="['/workspaces', workspaceId(), 'validation-runs']">
+        <mat-icon aria-hidden="true">arrow_back</mat-icon>
+        Back to validation runs
+      </a>
+
+      <div class="validation-run-detail__headline">
+        <div>
+          <p class="validation-run-detail__eyebrow">{{ run.mode }}</p>
+          <h1 id="validation-run-title">{{ run.name }}</h1>
+          <p>{{ run.description || 'No description added.' }}</p>
+        </div>
+        <mat-chip-set aria-label="Validation run status">
+          <mat-chip>{{ run.status }}</mat-chip>
+          <mat-chip>{{ run.totalItems }} items</mat-chip>
+        </mat-chip-set>
+      </div>
+
+      <div class="validation-run-detail__actions">
+        <button
+          mat-flat-button
+          type="button"
+          [disabled]="isCompleting() || run.status === 'COMPLETED'"
+          (click)="completeRun()"
+        >
+          @if (isCompleting()) {
+            <mat-spinner diameter="18"></mat-spinner>
+          } @else {
+            <mat-icon aria-hidden="true">done_all</mat-icon>
+          }
+          Complete run
+        </button>
+        <button
+          mat-button
+          type="button"
+          [disabled]="isDeleting()"
+          (click)="deleteRun()"
+        >
+          <mat-icon aria-hidden="true">delete</mat-icon>
+          Delete
+        </button>
+      </div>
+
+      @if (actionErrorMessage()) {
+        <p class="validation-run-detail__error">{{ actionErrorMessage() }}</p>
+      }
+    </header>
+
+    <section class="validation-run-detail__metrics" aria-label="Run metrics">
+      <div>
+        <span>Approval rate</span>
+        <strong>{{ run.approvalRate | percent: '1.0-0' }}</strong>
+      </div>
+      <div>
+        <span>Correction rate</span>
+        <strong>{{ run.correctionRate | percent: '1.0-0' }}</strong>
+      </div>
+      <div>
+        <span>Approved</span>
+        <strong>{{ run.approvedCount }}</strong>
+      </div>
+      <div>
+        <span>Rejected</span>
+        <strong>{{ run.rejectedCount }}</strong>
+      </div>
+      <div>
+        <span>Edited</span>
+        <strong>{{ run.editedCount }}</strong>
+      </div>
+      <div>
+        <span>Completed</span>
+        <strong>{{ run.completedAt ? (run.completedAt | date: 'short') : 'Open' }}</strong>
+      </div>
+    </section>
+
+    <div class="validation-run-detail__table-wrap">
+      <table
+        mat-table
+        [dataSource]="run.items ?? []"
+        class="validation-run-detail__table"
+      >
+        <ng-container matColumnDef="expectedLabel">
+          <th mat-header-cell *matHeaderCellDef>Expected label</th>
+          <td mat-cell *matCellDef="let item">{{ item.expectedLabel || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="predictedLabel">
+          <th mat-header-cell *matHeaderCellDef>Predicted label</th>
+          <td mat-cell *matCellDef="let item">{{ item.predictedLabel || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="finalLabel">
+          <th mat-header-cell *matHeaderCellDef>Final label</th>
+          <td mat-cell *matCellDef="let item">{{ item.finalLabel || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let item">{{ item.status }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef>Added</th>
+          <td mat-cell *matCellDef="let item">
+            {{ item.createdAt | date: 'medium' }}
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+  }
+</section>

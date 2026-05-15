@@ -6,11 +6,23 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client,
   },
   {
+    path: 'workspaces/:workspaceId/validation',
+    renderMode: RenderMode.Client,
+  },
+  {
     path: 'workspaces/:workspaceId/documents/:documentId',
     renderMode: RenderMode.Client,
   },
   {
     path: 'workspaces/:workspaceId/training-candidates',
+    renderMode: RenderMode.Client,
+  },
+  {
+    path: 'workspaces/:workspaceId/validation-runs',
+    renderMode: RenderMode.Client,
+  },
+  {
+    path: 'workspaces/:workspaceId/validation-runs/:runId',
     renderMode: RenderMode.Client,
   },
   {

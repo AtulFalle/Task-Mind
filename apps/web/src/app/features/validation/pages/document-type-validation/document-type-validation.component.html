@@ -1,0 +1,92 @@
+<section
+  class="document-type-validation"
+  aria-labelledby="document-type-validation-title"
+>
+  <header class="document-type-validation__header">
+    <a mat-button routerLink="/workspaces">
+      <mat-icon aria-hidden="true">arrow_back</mat-icon>
+      Back to dashboard
+    </a>
+
+    <div class="document-type-validation__headline">
+      <div>
+        <p class="document-type-validation__eyebrow">Manual validation</p>
+        <h1 id="document-type-validation-title">
+          Document Type Validation Samples
+        </h1>
+      </div>
+      <mat-chip-set aria-label="Dataset summary">
+        <mat-chip>{{ samples().length }} samples</mat-chip>
+      </mat-chip-set>
+    </div>
+
+    <p class="document-type-validation__intro">
+      Use these samples to manually upload/test documents and compare
+      TaskMindAI’s predictions before and after feedback.
+    </p>
+  </header>
+
+  @if (samplesResource.isLoading()) {
+    <div class="document-type-validation__status">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else if (errorMessage()) {
+    <p class="document-type-validation__error">{{ errorMessage() }}</p>
+  } @else {
+    <div class="document-type-validation__table-wrap">
+      <table
+        mat-table
+        [dataSource]="samples()"
+        class="document-type-validation__table"
+      >
+        <ng-container matColumnDef="title">
+          <th mat-header-cell *matHeaderCellDef>Sample</th>
+          <td mat-cell *matCellDef="let sample">
+            <strong>{{ sample.title }}</strong>
+            <span>{{ sample.id }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="expectedType">
+          <th mat-header-cell *matHeaderCellDef>Expected type</th>
+          <td mat-cell *matCellDef="let sample">
+            <mat-chip>{{ sample.expectedType }}</mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="preview">
+          <th mat-header-cell *matHeaderCellDef>Sample text preview</th>
+          <td mat-cell *matCellDef="let sample">
+            {{ textPreview(sample) }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="reason">
+          <th mat-header-cell *matHeaderCellDef>Why</th>
+          <td mat-cell *matCellDef="let sample">
+            {{ sample.reason }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let sample">
+            <button
+              mat-button
+              type="button"
+              (click)="copySampleText(sample)"
+            >
+              <mat-icon aria-hidden="true">
+                {{ copiedSampleId() === sample.id ? 'check' : 'content_copy' }}
+              </mat-icon>
+              Copy sample text
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+  }
+</section>

@@ -1,0 +1,116 @@
+<section class="validation-runs" aria-labelledby="validation-runs-title">
+  <header class="validation-runs__header">
+    <a mat-button [routerLink]="['/workspaces', workspaceId()]">
+      <mat-icon aria-hidden="true">arrow_back</mat-icon>
+      Back to workspace
+    </a>
+
+    <div>
+      <p class="validation-runs__eyebrow">Manual validation</p>
+      <h1 id="validation-runs-title">Validation Runs</h1>
+      <p>
+        Validation runs help measure whether TaskMindAI improves after human
+        feedback.
+      </p>
+      <p>Correction rate should decrease across repeated runs.</p>
+    </div>
+  </header>
+
+  <section class="validation-runs__form" aria-label="Create validation run">
+    <h2>Create validation run</h2>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Name</mat-label>
+      <input matInput type="text" [value]="draftName()" (input)="updateName($event)" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Description</mat-label>
+      <textarea
+        matInput
+        rows="3"
+        [value]="draftDescription()"
+        (input)="updateDescription($event)"
+      ></textarea>
+    </mat-form-field>
+
+    @if (saveErrorMessage()) {
+      <p class="validation-runs__error">{{ saveErrorMessage() }}</p>
+    }
+
+    <button
+      mat-flat-button
+      type="button"
+      [disabled]="isSaving() || !draftName().trim()"
+      (click)="createRun()"
+    >
+      @if (isSaving()) {
+        <mat-spinner diameter="18"></mat-spinner>
+      } @else {
+        <mat-icon aria-hidden="true">add</mat-icon>
+      }
+      Create run
+    </button>
+  </section>
+
+  @if (runsResource.isLoading()) {
+    <div class="validation-runs__status">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else if (errorMessage()) {
+    <p class="validation-runs__error">{{ errorMessage() }}</p>
+  } @else {
+    <div class="validation-runs__table-wrap">
+      <table mat-table [dataSource]="runs()" class="validation-runs__table">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let run">
+            <strong>{{ run.name }}</strong>
+            <span>{{ run.description || run.mode }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let run">{{ run.status }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="approvalRate">
+          <th mat-header-cell *matHeaderCellDef>Approval rate</th>
+          <td mat-cell *matCellDef="let run">
+            {{ run.approvalRate | percent: '1.0-0' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="correctionRate">
+          <th mat-header-cell *matHeaderCellDef>Correction rate</th>
+          <td mat-cell *matCellDef="let run">
+            {{ run.correctionRate | percent: '1.0-0' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="completedAt">
+          <th mat-header-cell *matHeaderCellDef>Completed</th>
+          <td mat-cell *matCellDef="let run">
+            {{ run.completedAt ? (run.completedAt | date: 'medium') : 'Not completed' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let run">
+            <a
+              mat-button
+              [routerLink]="['/workspaces', workspaceId(), 'validation-runs', run.id]"
+            >
+              Open
+            </a>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+  }
+</section>

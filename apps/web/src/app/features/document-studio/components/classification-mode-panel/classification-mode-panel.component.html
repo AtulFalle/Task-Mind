@@ -1,0 +1,262 @@
+<section
+  class="classification-mode-panel"
+  aria-labelledby="classification-mode-title"
+>
+  <div class="classification-mode-panel__header">
+    <div>
+      <h2 id="classification-mode-title">Classification Mode</h2>
+      <p>Use UNKNOWN when this document does not match any learned workflow.</p>
+    </div>
+
+    <button
+      mat-flat-button
+      type="button"
+      [disabled]="isLoading()"
+      (click)="classifyDocument.emit()"
+    >
+      @if (isLoading()) {
+        <mat-spinner diameter="18"></mat-spinner>
+      } @else {
+        <mat-icon aria-hidden="true">category</mat-icon>
+      }
+      Classify document type
+    </button>
+  </div>
+
+  <p class="classification-mode-panel__note">
+    UNKNOWN is a valid decision when the document does not match the learned
+    workflow.
+  </p>
+
+  @if (contextHint()) {
+    <p class="classification-mode-panel__context-hint">{{ contextHint() }}</p>
+  }
+
+  @if (errorMessage()) {
+    <p class="classification-mode-panel__error">{{ errorMessage() }}</p>
+  }
+
+  @if (suggestion(); as suggestion) {
+    @if (classification(); as classification) {
+      <article class="classification-mode-panel__result">
+        @if (editingSuggestionId() === suggestion.id) {
+          <div class="classification-mode-panel__editor">
+            <mat-form-field appearance="outline">
+              <mat-label>Correct document type</mat-label>
+              <mat-select
+                [value]="draftDocumentType()"
+                (valueChange)="updateDocumentType($event)"
+              >
+                @for (documentType of documentTypes; track documentType) {
+                  <mat-option [value]="documentType">
+                    {{ documentType }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Correction reasoning</mat-label>
+              <textarea
+                matInput
+                rows="3"
+                [value]="draftReasoning()"
+                (input)="updateReasoning($event)"
+              ></textarea>
+            </mat-form-field>
+
+            <div class="classification-mode-panel__actions">
+              <button
+                mat-flat-button
+                type="button"
+                [disabled]="isRecordingFeedback()"
+                (click)="saveEdit(suggestion.id)"
+              >
+                Save
+              </button>
+              <button
+                mat-button
+                type="button"
+                [disabled]="isRecordingFeedback()"
+                (click)="cancelEdit()"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        } @else if (rejectingSuggestionId() === suggestion.id) {
+          <div class="classification-mode-panel__editor">
+            <mat-form-field appearance="outline">
+              <mat-label>Rejection reason</mat-label>
+              <textarea
+                matInput
+                rows="3"
+                [value]="rejectionReason()"
+                (input)="updateRejectionReason($event)"
+              ></textarea>
+            </mat-form-field>
+
+            <div class="classification-mode-panel__actions">
+              <button
+                mat-flat-button
+                type="button"
+                [disabled]="isRecordingFeedback()"
+                (click)="submitReject(suggestion.id)"
+              >
+                Reject
+              </button>
+              <button
+                mat-button
+                type="button"
+                [disabled]="isRecordingFeedback()"
+                (click)="cancelReject()"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        } @else {
+          <div class="classification-mode-panel__result-header">
+            <div>
+              <span>Predicted document type</span>
+              <h3>{{ classification.documentType }}</h3>
+              <p>{{ suggestion.status }}</p>
+            </div>
+            <strong>{{ classification.confidence | percent: '1.0-0' }}</strong>
+          </div>
+
+          <mat-progress-bar
+            mode="determinate"
+            [value]="classification.confidence * 100"
+          ></mat-progress-bar>
+
+          @if (isUnknownClassification()) {
+            <p class="classification-mode-panel__unknown-state">
+              TaskMindAI chose not to classify this document.
+            </p>
+          }
+
+          <div class="classification-mode-panel__reasoning">
+            <span>Reasoning</span>
+            <p>{{ classification.reasoning }}</p>
+          </div>
+
+          @if (classification.applicability; as applicability) {
+            <div class="classification-mode-panel__applicability">
+              <div class="classification-mode-panel__applicability-header">
+                <span>Applicability status</span>
+                <strong>
+                  {{ applicability.isApplicable ? 'Applicable' : 'Not applicable' }}
+                </strong>
+              </div>
+
+              <div class="classification-mode-panel__signals">
+                <span>Matched signals</span>
+                @if (applicability.matchedSignals.length > 0) {
+                  <ul>
+                    @for (
+                      signal of applicability.matchedSignals;
+                      track signal
+                    ) {
+                      <li>{{ signal }}</li>
+                    }
+                  </ul>
+                } @else {
+                  <p>No strong matching signals.</p>
+                }
+              </div>
+
+              <div class="classification-mode-panel__signals">
+                <span>Missing signals</span>
+                @if (applicability.missingSignals.length > 0) {
+                  <ul>
+                    @for (
+                      signal of applicability.missingSignals;
+                      track signal
+                    ) {
+                      <li>{{ signal }}</li>
+                    }
+                  </ul>
+                } @else {
+                  <p>No required signals reported missing.</p>
+                }
+              </div>
+            </div>
+          }
+
+          <div class="classification-mode-panel__actions">
+            <button
+              mat-button
+              type="button"
+              [disabled]="isRecordingFeedback()"
+              (click)="approveSuggestion.emit(suggestion.id)"
+            >
+              <mat-icon aria-hidden="true">thumb_up</mat-icon>
+              Approve
+            </button>
+            <button
+              mat-button
+              type="button"
+              [disabled]="isRecordingFeedback()"
+              (click)="startReject(suggestion.id)"
+            >
+              <mat-icon aria-hidden="true">thumb_down</mat-icon>
+              Reject
+            </button>
+            <button
+              mat-button
+              type="button"
+              [disabled]="isRecordingFeedback()"
+              (click)="startEdit(suggestion)"
+            >
+              <mat-icon aria-hidden="true">edit</mat-icon>
+              Correct
+            </button>
+          </div>
+
+          <div class="classification-mode-panel__validation">
+            <mat-form-field appearance="outline">
+              <mat-label>Validation run</mat-label>
+              <mat-select
+                [value]="selectedRunId()"
+                (valueChange)="updateSelectedRun($event)"
+              >
+                @for (run of activeValidationRuns(); track run.id) {
+                  <mat-option [value]="run.id">{{ run.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Expected label</mat-label>
+              <mat-select
+                [value]="expectedLabel()"
+                (valueChange)="updateExpectedLabel($event)"
+              >
+                @for (documentType of documentTypes; track documentType) {
+                  <mat-option [value]="documentType">
+                    {{ documentType }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <button
+              mat-button
+              type="button"
+              [disabled]="!selectedRunId() || isRecordingFeedback()"
+              (click)="submitValidationRunItem(suggestion)"
+            >
+              <mat-icon aria-hidden="true">playlist_add_check</mat-icon>
+              Add to validation run
+            </button>
+          </div>
+        }
+      </article>
+    }
+  } @else if (!isLoading()) {
+    <div class="classification-mode-panel__state">
+      <p>No classification result loaded yet.</p>
+    </div>
+  }
+</section>

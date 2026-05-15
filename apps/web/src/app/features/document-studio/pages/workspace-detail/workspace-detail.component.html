@@ -8,8 +8,85 @@
   } @else if (workspace(); as workspace) {
     <app-workspace-header [workspace]="workspace"></app-workspace-header>
 
-    <div class="document-studio__workspace-grid">
-      <div class="document-studio__documents">
+    <app-validation-metrics-panel
+      [metrics]="validationMetrics()"
+      [isLoading]="validationMetricsResource.isLoading()"
+      [errorMessage]="validationMetricsErrorMessage()"
+    ></app-validation-metrics-panel>
+
+    <section class="document-studio__validation-mode" aria-label="Validation mode">
+      <div class="document-studio__validation-mode-copy">
+        <p class="document-studio__eyebrow">Validation Mode</p>
+        <h2>End-to-end validation flow</h2>
+        <p>
+          TaskMindAI is learning through prompt-injected teaching memory. This
+          screen helps validate whether corrections are being reused.
+        </p>
+      </div>
+
+      <div class="document-studio__validation-mode-actions">
+        <a mat-flat-button [routerLink]="['/workspaces', workspace.id, 'validation']">
+          <mat-icon aria-hidden="true">play_arrow</mat-icon>
+          Start validation flow
+        </a>
+        <a mat-button [routerLink]="['/workspaces', workspace.id, 'validation']">
+          <mat-icon aria-hidden="true">checklist</mat-icon>
+          View validation checklist
+        </a>
+      </div>
+
+      <div class="document-studio__readiness">
+        <div class="document-studio__readiness-header">
+          <h3>Current workspace readiness</h3>
+          <span>
+            {{ completedReadinessChecks() }}/{{ readinessChecks().length }}
+            ready
+          </span>
+        </div>
+
+        @if (validationReadinessResource.isLoading()) {
+          <div class="document-studio__readiness-state">
+            <mat-spinner diameter="28"></mat-spinner>
+          </div>
+        } @else if (validationReadinessErrorMessage()) {
+          <p class="document-studio__error">
+            {{ validationReadinessErrorMessage() }}
+          </p>
+        } @else {
+          <ul class="document-studio__readiness-list">
+            @for (check of readinessChecks(); track check.label) {
+              <li [class.document-studio__readiness-item--complete]="check.complete">
+                <mat-icon aria-hidden="true">
+                  {{ check.complete ? 'check_circle' : 'radio_button_unchecked' }}
+                </mat-icon>
+                <span>{{ check.label }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </section>
+
+    <section class="document-studio__validation-runs" aria-label="Validation runs">
+      <div>
+        <h2>Validation Runs</h2>
+        <p>
+          Validation runs help measure whether TaskMindAI improves after human
+          feedback.
+        </p>
+        <p>Correction rate should decrease across repeated runs.</p>
+      </div>
+      <a
+        mat-flat-button
+        [routerLink]="['/workspaces', workspace.id, 'validation-runs']"
+      >
+        <mat-icon aria-hidden="true">fact_check</mat-icon>
+        Validation Runs
+      </a>
+    </section>
+
+    <div class="document-studio__primary-grid">
+      <section class="document-studio__documents" aria-label="Documents">
         <app-document-upload
           [workspaceId]="workspace.id"
           [onUploaded]="handleDocumentUploaded"
@@ -21,9 +98,9 @@
           [isLoading]="documentsResource.isLoading()"
           [errorMessage]="documentsErrorMessage()"
         ></app-document-list>
-      </div>
+      </section>
 
-      <div class="document-studio__workspace-side">
+      <section class="document-studio__rules" aria-label="Operational rules">
         <app-operational-rules-panel
           [rules]="rules()"
           [isLoading]="rulesResource.isLoading()"
@@ -34,20 +111,29 @@
           (createRule)="createRule($event)"
           (deleteRule)="deleteRule($event)"
         ></app-operational-rules-panel>
+      </section>
+    </div>
 
+    <div class="document-studio__secondary-grid">
+      <section
+        class="document-studio__training"
+        aria-label="Training candidates"
+      >
         <app-training-candidates-panel
           [workspaceId]="workspace.id"
           [candidates]="trainingCandidates()"
           [isLoading]="trainingCandidatesResource.isLoading()"
           [errorMessage]="trainingCandidatesErrorMessage()"
         ></app-training-candidates-panel>
+      </section>
 
+      <section class="document-studio__memory" aria-label="Teaching memory">
         <app-teaching-memory-panel
           [events]="feedbackEvents()"
           [isLoading]="feedbackEventsResource.isLoading()"
           [errorMessage]="feedbackEventsErrorMessage()"
         ></app-teaching-memory-panel>
-      </div>
+      </section>
     </div>
   }
 </section>

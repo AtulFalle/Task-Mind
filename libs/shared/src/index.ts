@@ -42,6 +42,34 @@ export interface CreateWorkspaceRequest {
 
 export type UpdateWorkspaceRequest = CreateWorkspaceRequest;
 
+export interface WorkspaceValidationMetrics {
+  workspaceId: string;
+  totalSuggestions: number;
+  approvedSuggestions: number;
+  rejectedSuggestions: number;
+  editedSuggestions: number;
+  convertedToAnnotations: number;
+  unknownPredictions: number;
+  unknownCorrections: number;
+  forcedClassificationErrors: number;
+  approvalRate: number;
+  correctionRate: number;
+  rejectionRate: number;
+  applicabilityRejectionRate: number;
+  totalAnnotations: number;
+  totalRules: number;
+  totalTrainingCandidates: number;
+}
+
+export interface WorkspaceValidationReadiness {
+  hasDocuments: boolean;
+  hasRules: boolean;
+  hasAiSuggestions: boolean;
+  hasHumanFeedback: boolean;
+  aiServiceReachable: boolean;
+  latestContextStats: AiContextStats;
+}
+
 export interface Document {
   id: string;
   workspaceId: string;
@@ -198,6 +226,24 @@ export interface UpdateTrainingCandidateRequest {
   status?: TrainingCandidateStatus;
 }
 
+export const DocumentType = {
+  INVOICE: 'INVOICE',
+  RESUME: 'RESUME',
+  BANK_STATEMENT: 'BANK_STATEMENT',
+  SUPPORT_EMAIL: 'SUPPORT_EMAIL',
+  UNKNOWN: 'UNKNOWN',
+} as const;
+
+export type DocumentType = (typeof DocumentType)[keyof typeof DocumentType];
+
+export const SuggestionMode = {
+  EXTRACTION: 'EXTRACTION',
+  DOCUMENT_CLASSIFICATION: 'DOCUMENT_CLASSIFICATION',
+} as const;
+
+export type SuggestionMode =
+  (typeof SuggestionMode)[keyof typeof SuggestionMode];
+
 export interface AiAnnotationSuggestion {
   fieldName: string;
   selectedText: string;
@@ -205,8 +251,157 @@ export interface AiAnnotationSuggestion {
   confidence: number;
 }
 
+export interface DocumentTypeClassification {
+  documentType: DocumentType;
+  reasoning: string;
+  confidence: number;
+  applicability?: ApplicabilityResult;
+}
+
+export interface ApplicabilityResult {
+  isApplicable: boolean;
+  matchedSignals: string[];
+  missingSignals: string[];
+}
+
+export interface DocumentClassificationRuleContext {
+  id: string;
+  title: string;
+  ruleText: string;
+  category: RuleCategory;
+  source: RuleSource;
+  confidence: number;
+}
+
+export interface DocumentClassificationExample {
+  source: 'AI_SUGGESTION' | 'VALIDATION_RUN';
+  documentId?: string;
+  documentName?: string;
+  documentExcerpt?: string;
+  predictedLabel?: DocumentType;
+  approvedLabel?: DocumentType;
+  correctedLabel?: DocumentType;
+  rejectedLabel?: DocumentType;
+  expectedLabel?: DocumentType;
+  finalLabel?: DocumentType;
+  reasoning?: string;
+  correctionReasoning?: string;
+  confidence?: number;
+  createdAt: string;
+}
+
+export interface DocumentClassificationContext {
+  rules: DocumentClassificationRuleContext[];
+  applicabilityRules: DocumentClassificationRuleContext[];
+  approvedExamples: DocumentClassificationExample[];
+  correctedExamples: DocumentClassificationExample[];
+  rejectedExamples: DocumentClassificationExample[];
+  unknownExamples: DocumentClassificationExample[];
+  rejectionExamples: DocumentClassificationExample[];
+  classificationLabels: DocumentType[];
+  knownDocumentTypes: DocumentType[];
+}
+
+export interface AiContextStats {
+  rulesUsed: number;
+  approvedExamplesUsed: number;
+  correctedExamplesUsed: number;
+  rejectedExamplesUsed: number;
+  applicabilityRulesUsed?: number;
+  unknownExamplesUsed?: number;
+  rejectionExamplesUsed?: number;
+}
+
+export interface DocumentTypeValidationSample {
+  id: string;
+  title: string;
+  text: string;
+  expectedType: DocumentType;
+  reason: string;
+}
+
+export interface DocumentTypeValidationSamplesResponse {
+  samples: DocumentTypeValidationSample[];
+}
+
+export const ValidationRunMode = {
+  DOCUMENT_CLASSIFICATION: 'DOCUMENT_CLASSIFICATION',
+} as const;
+
+export type ValidationRunMode =
+  (typeof ValidationRunMode)[keyof typeof ValidationRunMode];
+
+export const ValidationRunStatus = {
+  DRAFT: 'DRAFT',
+  RUNNING: 'RUNNING',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type ValidationRunStatus =
+  (typeof ValidationRunStatus)[keyof typeof ValidationRunStatus];
+
+export const ValidationRunItemStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  EDITED: 'EDITED',
+} as const;
+
+export type ValidationRunItemStatus =
+  (typeof ValidationRunItemStatus)[keyof typeof ValidationRunItemStatus];
+
+export interface ValidationRunItem {
+  id: string;
+  validationRunId: string;
+  documentId?: string;
+  aiSuggestionId?: string;
+  expectedLabel?: string;
+  predictedLabel?: string;
+  finalLabel?: string;
+  status: ValidationRunItemStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ValidationRun {
+  id: string;
+  workspaceId: string;
+  name: string;
+  description?: string;
+  mode: ValidationRunMode;
+  status: ValidationRunStatus;
+  totalItems: number;
+  approvedCount: number;
+  rejectedCount: number;
+  editedCount: number;
+  correctionRate: number;
+  approvalRate: number;
+  startedAt: string;
+  completedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  items?: ValidationRunItem[];
+}
+
+export interface CreateValidationRunRequest {
+  name: string;
+  description?: string;
+  mode: ValidationRunMode;
+}
+
+export interface AddValidationRunItemRequest {
+  documentId?: string;
+  aiSuggestionId?: string;
+  expectedLabel?: string;
+  predictedLabel?: string;
+  finalLabel?: string;
+  status: ValidationRunItemStatus;
+}
+
 export interface AiAnnotationSuggestionsResponse {
   suggestions: AiSuggestion[];
+  contextStats?: AiContextStats;
 }
 
 export const AiSuggestionStatus = {
@@ -225,18 +420,26 @@ export interface AiSuggestion extends AiAnnotationSuggestion {
   workspaceId: string;
   documentId: string;
   annotationId?: string;
+  mode: SuggestionMode;
+  payloadJson: Record<string, unknown>;
   status: AiSuggestionStatus;
   correctedFieldName?: string;
   correctedSelectedText?: string;
   correctedReasoning?: string;
+  correctedPayloadJson?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
 
+export interface AiSuggestionRequest {
+  mode?: SuggestionMode;
+}
+
 export interface UpdateAiSuggestionRequest {
-  correctedFieldName: string;
-  correctedSelectedText: string;
-  correctedReasoning: string;
+  correctedFieldName?: string;
+  correctedSelectedText?: string;
+  correctedReasoning?: string;
+  correctedDocumentType?: DocumentType;
 }
 
 export interface RejectAiSuggestionRequest {
@@ -263,6 +466,8 @@ export const FeedbackEventType = {
   AI_SUGGESTION_EDITED: 'AI_SUGGESTION_EDITED',
   AI_SUGGESTION_CONVERTED_TO_ANNOTATION:
     'AI_SUGGESTION_CONVERTED_TO_ANNOTATION',
+  VALIDATION_RUN_CREATED: 'VALIDATION_RUN_CREATED',
+  VALIDATION_RUN_COMPLETED: 'VALIDATION_RUN_COMPLETED',
 } as const;
 
 export type FeedbackEventType =

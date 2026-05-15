@@ -1,0 +1,179 @@
+{
+  "samples": [
+    {
+      "id": "invoice-001",
+      "title": "Invoice with due date",
+      "text": "Invoice INV-1048\nBill to: Northstar Logistics\nAmount due: $2,450.00\nDue date: June 15, 2026\nPayment terms: Net 30",
+      "expectedType": "INVOICE",
+      "reason": "Contains an invoice number, amount due, due date, and payment terms."
+    },
+    {
+      "id": "invoice-002",
+      "title": "Office supply invoice",
+      "text": "Acme Office Supply\nInvoice number: AOS-88912\nSubtotal: $718.40\nSales tax: $57.47\nTotal balance due: $775.87",
+      "expectedType": "INVOICE",
+      "reason": "Contains supplier name, invoice number, subtotal, tax, and total balance due."
+    },
+    {
+      "id": "invoice-003",
+      "title": "Services invoice",
+      "text": "Professional Services Invoice\nClient: Harbor Clinic\nLine item: May consulting retainer\nInvoice date: May 31, 2026\nPlease remit $3,000 by July 1, 2026.",
+      "expectedType": "INVOICE",
+      "reason": "Identifies itself as an invoice and includes client, line item, invoice date, amount, and remittance date."
+    },
+    {
+      "id": "invoice-004",
+      "title": "Partial payment invoice",
+      "text": "Receipt and Invoice\nOrder ID: MKT-55201\nItems: signage package, install labor\nTotal: $1,284.10\nOutstanding amount: $642.05",
+      "expectedType": "INVOICE",
+      "reason": "Shows an order, billed items, total, and outstanding amount to be paid."
+    },
+    {
+      "id": "invoice-005",
+      "title": "Maintenance invoice",
+      "text": "Invoice from Redwood Maintenance\nService period: April 2026\nInvoice #: RM-2026-041\nBalance due: $498.00\nMake checks payable to Redwood Maintenance.",
+      "expectedType": "INVOICE",
+      "reason": "Includes vendor, service period, invoice number, balance due, and payment instruction."
+    },
+    {
+      "id": "resume-001",
+      "title": "Product operations resume",
+      "text": "Jordan Patel\nProduct Operations Manager\nExperience: 6 years in workflow automation and customer operations.\nSkills: SQL, stakeholder management, process documentation.",
+      "expectedType": "RESUME",
+      "reason": "Lists a person, role, experience, and skills as a professional profile."
+    },
+    {
+      "id": "resume-002",
+      "title": "Software engineer resume",
+      "text": "Maya Chen\nSoftware Engineer\nWork history: Frontend Engineer at Bluefin Labs, 2022-present.\nEducation: B.S. Computer Science, Rutgers University.",
+      "expectedType": "RESUME",
+      "reason": "Contains candidate name, job title, work history, and education."
+    },
+    {
+      "id": "resume-003",
+      "title": "Data analyst resume",
+      "text": "Resume: Alex Romero\nSummary: Data analyst with banking and risk reporting experience.\nTools: Python, Excel, Tableau.\nCertifications: Google Data Analytics Certificate.",
+      "expectedType": "RESUME",
+      "reason": "Explicitly says resume and includes summary, tools, and certifications."
+    },
+    {
+      "id": "resume-004",
+      "title": "Recruiter resume",
+      "text": "Priya Shah\nSenior Recruiter\nProfessional experience includes sourcing, interview coordination, and ATS administration.\nEducation: MBA, Human Resources.",
+      "expectedType": "RESUME",
+      "reason": "Describes a candidate with professional experience and education."
+    },
+    {
+      "id": "resume-005",
+      "title": "Operations associate resume",
+      "text": "Name: Theo Martin\nObjective: Operations associate role.\nPrevious roles: Warehouse coordinator, inventory clerk.\nReferences available upon request.",
+      "expectedType": "RESUME",
+      "reason": "Includes candidate name, objective, previous roles, and references language."
+    },
+    {
+      "id": "bank-statement-001",
+      "title": "Monthly account summary",
+      "text": "Monthly Statement\nAccount ending in 4421\nOpening balance: $4,210.20\nDeposits: $1,600.00\nWithdrawals: $985.44\nClosing balance: $4,824.76",
+      "expectedType": "BANK_STATEMENT",
+      "reason": "Contains account identifier, deposits, withdrawals, opening balance, and closing balance."
+    },
+    {
+      "id": "bank-statement-002",
+      "title": "Statement period summary",
+      "text": "Community Bank\nStatement period: April 1-April 30, 2026\nAccount summary\nBeginning balance: $12,004.18\nEnding balance: $11,842.03",
+      "expectedType": "BANK_STATEMENT",
+      "reason": "Uses bank statement language with statement period and beginning/ending balances."
+    },
+    {
+      "id": "bank-statement-003",
+      "title": "Checking account activity",
+      "text": "Checking Account Activity\n04/03 ACH deposit payroll $2,225.00\n04/05 debit card grocery $88.14\n04/12 ATM withdrawal $100.00\nAvailable balance: $3,109.55",
+      "expectedType": "BANK_STATEMENT",
+      "reason": "Shows dated account transactions, deposits, debits, ATM withdrawal, and balance."
+    },
+    {
+      "id": "bank-statement-004",
+      "title": "Savings statement",
+      "text": "Savings Statement\nAccount holder: Morgan Lee\nInterest paid year to date: $18.20\nAverage daily balance: $7,450.67\nStatement closing date: May 31, 2026",
+      "expectedType": "BANK_STATEMENT",
+      "reason": "Contains savings statement details, account holder, interest, average balance, and closing date."
+    },
+    {
+      "id": "bank-statement-005",
+      "title": "Business banking statement",
+      "text": "Business Banking Statement\nAccount ending 9088\nCredits this period: $8,900.00\nDebits this period: $7,345.22\nService charge: $12.00",
+      "expectedType": "BANK_STATEMENT",
+      "reason": "Includes business banking statement language with account ending, credits, debits, and service charge."
+    },
+    {
+      "id": "support-email-001",
+      "title": "Password reset issue",
+      "text": "Subject: Cannot reset my password\nHi support team, the reset link expires immediately after I click it. Can you help me regain access to my account?",
+      "expectedType": "SUPPORT_EMAIL",
+      "reason": "Customer is asking support for help with an account access issue."
+    },
+    {
+      "id": "support-email-002",
+      "title": "Duplicate billing issue",
+      "text": "Subject: Billing question\nHello, I was charged twice for my May subscription. Please review invoice 5542 and refund the duplicate payment.",
+      "expectedType": "SUPPORT_EMAIL",
+      "reason": "Customer message requests support review and refund for a billing issue."
+    },
+    {
+      "id": "support-email-003",
+      "title": "Upload crash report",
+      "text": "Subject: App crashes when uploading files\nThe dashboard freezes whenever I upload a PDF larger than 5 MB. I am using Chrome on Windows 11.",
+      "expectedType": "SUPPORT_EMAIL",
+      "reason": "Reports a product problem with environment details for support troubleshooting."
+    },
+    {
+      "id": "support-email-004",
+      "title": "Account owner change request",
+      "text": "Subject: Change account owner\nCan you transfer workspace ownership from dana@example.com to opslead@example.com? The current owner left our company.",
+      "expectedType": "SUPPORT_EMAIL",
+      "reason": "Customer requests an account administration change from support."
+    },
+    {
+      "id": "support-email-005",
+      "title": "Feature request email",
+      "text": "Subject: Feature request\nIt would help our team if exported reports included annotation history and reviewer names. Is this planned?",
+      "expectedType": "SUPPORT_EMAIL",
+      "reason": "Customer submits a product feature request to the support team."
+    },
+    {
+      "id": "unknown-001",
+      "title": "Meeting notes",
+      "text": "Meeting notes\nDiscussed office seating, coffee machine repair, and next Friday's volunteer event.",
+      "expectedType": "UNKNOWN",
+      "reason": "General meeting notes do not match invoice, resume, bank statement, or support email workflows."
+    },
+    {
+      "id": "unknown-002",
+      "title": "Recipe draft",
+      "text": "Recipe draft\nCombine chickpeas, lemon juice, garlic, olive oil, and tahini. Blend until smooth and adjust salt.",
+      "expectedType": "UNKNOWN",
+      "reason": "Recipe instructions are unrelated to the learned document workflows."
+    },
+    {
+      "id": "unknown-003",
+      "title": "Weather alert",
+      "text": "Weather alert\nHeavy rain is expected after 4 PM. Outdoor activities should move indoors where possible.",
+      "expectedType": "UNKNOWN",
+      "reason": "Weather notice does not contain the defining features of any supported workflow."
+    },
+    {
+      "id": "unknown-004",
+      "title": "Personal reminder",
+      "text": "Short note\nRemember to pick up printer paper and call the building manager about the elevator.",
+      "expectedType": "UNKNOWN",
+      "reason": "Personal reminder text should be treated as outside the learned applicability boundary."
+    },
+    {
+      "id": "unknown-005",
+      "title": "Product label",
+      "text": "Product label\nOrganic green tea, 20 sachets. Ingredients: green tea leaves. Store in a cool, dry place.",
+      "expectedType": "UNKNOWN",
+      "reason": "Product label content is not an invoice, resume, bank statement, or support email."
+    }
+  ]
+}

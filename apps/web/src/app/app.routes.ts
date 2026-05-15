@@ -16,11 +16,39 @@ export const appRoutes: Route[] = [
       ),
   },
   {
+    path: 'validation/document-types',
+    loadComponent: () =>
+      import(
+        './features/validation/pages/document-type-validation/document-type-validation.component'
+      ).then((m) => m.DocumentTypeValidationComponent),
+  },
+  {
+    path: 'workspaces/:workspaceId/validation',
+    loadComponent: () =>
+      import(
+        './features/validation/pages/validation-flow/validation-flow.component'
+      ).then((m) => m.ValidationFlowComponent),
+  },
+  {
     path: 'workspaces/:workspaceId/documents/:documentId',
     loadComponent: () =>
       import(
         './features/document-studio/pages/document-detail/document-detail.component'
       ).then((m) => m.DocumentDetailComponent),
+  },
+  {
+    path: 'workspaces/:workspaceId/validation-runs',
+    loadComponent: () =>
+      import(
+        './features/workspaces/validation-runs/validation-runs.component'
+      ).then((m) => m.ValidationRunsComponent),
+  },
+  {
+    path: 'workspaces/:workspaceId/validation-runs/:runId',
+    loadComponent: () =>
+      import(
+        './features/workspaces/validation-run-detail/validation-run-detail.component'
+      ).then((m) => m.ValidationRunDetailComponent),
   },
   {
     path: 'workspaces/:workspaceId/training-candidates',

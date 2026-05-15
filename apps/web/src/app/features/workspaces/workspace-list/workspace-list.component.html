@@ -13,6 +13,13 @@
     </button>
   </div>
 
+  <nav class="workspace-list__tools" aria-label="Validation tools">
+    <a mat-stroked-button routerLink="/validation/document-types">
+      <mat-icon aria-hidden="true">fact_check</mat-icon>
+      Document Type Validation Samples
+    </a>
+  </nav>
+
   @if (isLoading()) {
     <div class="workspace-list__status">
       <mat-spinner diameter="36"></mat-spinner>

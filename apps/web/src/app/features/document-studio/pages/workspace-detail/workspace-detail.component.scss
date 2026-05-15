@@ -1,9 +1,9 @@
 .document-studio {
   display: grid;
-  gap: 1.5rem;
-  max-width: 76rem;
+  gap: 1.25rem;
+  width: min(100%, 92rem);
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 1.5rem;
 
   &__status {
     display: grid;
@@ -19,11 +19,131 @@
     color: #8a1c1c;
   }
 
-  &__workspace-grid,
   &__documents,
-  &__workspace-side {
+  &__rules,
+  &__training,
+  &__memory,
+  &__validation-mode,
+  &__validation-runs,
+  &__primary-grid,
+  &__secondary-grid {
     display: grid;
-    gap: 1.5rem;
+    min-width: 0;
+  }
+
+  &__documents,
+  &__primary-grid,
+  &__secondary-grid {
+    gap: 1.25rem;
+  }
+
+  &__validation-mode,
+  &__validation-runs {
+    gap: 1rem;
+    padding: 1.25rem;
+    border: 1px solid #d9e0ea;
+    border-radius: 8px;
+    background: #ffffff;
+
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h2,
+    h3 {
+      color: #172033;
+      font-size: 1.1rem;
+    }
+
+    p {
+      margin-top: 0.35rem;
+      color: #526276;
+      line-height: 1.45;
+    }
+
+    a {
+      justify-self: start;
+    }
+  }
+
+  &__validation-mode {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  &__eyebrow {
+    color: #526276;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  &__validation-mode-copy,
+  &__validation-mode-actions,
+  &__readiness {
+    display: grid;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  &__validation-mode-actions {
+    align-content: start;
+  }
+
+  &__readiness {
+    padding: 1rem;
+    border: 1px solid #edf1f7;
+    border-radius: 8px;
+    background: #f8fafc;
+  }
+
+  &__readiness-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: space-between;
+
+    span {
+      color: #526276;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+  }
+
+  &__readiness-state {
+    display: grid;
+    place-items: center;
+    min-height: 6rem;
+  }
+
+  &__readiness-list {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      display: flex;
+      gap: 0.55rem;
+      align-items: center;
+      color: #526276;
+      font-weight: 600;
+    }
+
+    mat-icon {
+      color: #8492a6;
+    }
+  }
+
+  &__readiness-item--complete {
+    color: #1f6f4a !important;
+
+    mat-icon {
+      color: #1f8f61;
+    }
   }
 }
 
@@ -33,18 +153,29 @@
   }
 }
 
-@media (min-width: 1100px) {
+@media (min-width: 980px) {
   .document-studio {
-    max-width: 94rem;
+    gap: 1.5rem;
+    padding-block: 2rem;
 
-    &__workspace-grid {
-      grid-template-columns: minmax(0, 1fr) minmax(24rem, 30rem);
+    &__primary-grid {
+      grid-template-columns: minmax(0, 1.35fr) minmax(24rem, 0.65fr);
       align-items: start;
     }
 
-    &__workspace-side {
-      position: sticky;
-      top: 1rem;
+    &__secondary-grid {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      align-items: start;
+    }
+
+    &__validation-runs {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+    }
+
+    &__validation-mode {
+      grid-template-columns: minmax(0, 1fr) auto minmax(18rem, 0.45fr);
+      align-items: start;
     }
   }
 }

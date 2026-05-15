@@ -58,6 +58,8 @@ enum FeedbackEventType {
   AI_SUGGESTION_REJECTED
   AI_SUGGESTION_EDITED
   AI_SUGGESTION_CONVERTED_TO_ANNOTATION
+  VALIDATION_RUN_CREATED
+  VALIDATION_RUN_COMPLETED
 }
 
 enum AiSuggestionStatus {
@@ -66,6 +68,29 @@ enum AiSuggestionStatus {
   REJECTED
   EDITED
   CONVERTED_TO_ANNOTATION
+}
+
+enum SuggestionMode {
+  EXTRACTION
+  DOCUMENT_CLASSIFICATION
+}
+
+enum ValidationRunMode {
+  DOCUMENT_CLASSIFICATION
+}
+
+enum ValidationRunStatus {
+  DRAFT
+  RUNNING
+  COMPLETED
+  CANCELLED
+}
+
+enum ValidationRunItemStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EDITED
 }
 
 enum TrainingCandidateType {
@@ -94,6 +119,7 @@ model Workspace {
   annotationLinks    AnnotationRuleLink[]
   trainingCandidates TrainingCandidate[]
   aiSuggestions      AiSuggestion[]
+  validationRuns     ValidationRun[]
   feedbackEvents     FeedbackEvent[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
@@ -117,6 +143,7 @@ model Document {
   annotations         Annotation[]
   trainingCandidates  TrainingCandidate[]
   aiSuggestions       AiSuggestion[]
+  validationRunItems  ValidationRunItem[]
   feedbackEvents      FeedbackEvent[]
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
@@ -160,15 +187,20 @@ model AiSuggestion {
   selectedText          String             @db.Text
   reasoning             String             @db.Text
   confidence            Float
+  mode                  SuggestionMode     @default(EXTRACTION)
+  payloadJson           Json               @default("{}")
   status                AiSuggestionStatus @default(PENDING)
   correctedFieldName    String?
   correctedSelectedText String?            @db.Text
   correctedReasoning    String?            @db.Text
+  correctedPayloadJson  Json?
+  validationRunItems    ValidationRunItem[]
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
 
   @@index([workspaceId, createdAt])
   @@index([documentId, createdAt])
+  @@index([mode, createdAt])
   @@index([status, createdAt])
 }
 
@@ -186,6 +218,51 @@ model OperationalRule {
   updatedAt       DateTime             @updatedAt
 
   @@index([workspaceId, createdAt])
+}
+
+model ValidationRun {
+  id             String              @id @default(uuid())
+  workspaceId    String
+  workspace      Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name           String
+  description    String?             @db.Text
+  mode           ValidationRunMode
+  status         ValidationRunStatus  @default(DRAFT)
+  totalItems     Int                  @default(0)
+  approvedCount  Int                  @default(0)
+  rejectedCount  Int                  @default(0)
+  editedCount    Int                  @default(0)
+  correctionRate Float                @default(0)
+  approvalRate   Float                @default(0)
+  startedAt      DateTime             @default(now())
+  completedAt    DateTime?
+  items          ValidationRunItem[]
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  @@index([workspaceId, createdAt])
+  @@index([status, createdAt])
+}
+
+model ValidationRunItem {
+  id              String                  @id @default(uuid())
+  validationRunId String
+  validationRun   ValidationRun           @relation(fields: [validationRunId], references: [id], onDelete: Cascade)
+  documentId      String?
+  document        Document?               @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  aiSuggestionId  String?
+  aiSuggestion    AiSuggestion?           @relation(fields: [aiSuggestionId], references: [id], onDelete: SetNull)
+  expectedLabel   String?
+  predictedLabel  String?
+  finalLabel      String?
+  status          ValidationRunItemStatus @default(PENDING)
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  @@index([validationRunId, createdAt])
+  @@index([documentId, createdAt])
+  @@index([aiSuggestionId, createdAt])
+  @@index([status, createdAt])
 }
 
 model AnnotationRuleLink {

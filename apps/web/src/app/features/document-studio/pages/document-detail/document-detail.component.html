@@ -65,8 +65,26 @@
       </main>
 
       <aside class="document-detail__sidebar" aria-label="Teaching tools">
+        <app-classification-mode-panel
+          [suggestion]="latestClassificationSuggestion()"
+          [isLoading]="isLoadingClassification()"
+          [errorMessage]="aiSuggestionError()"
+          [isRecordingFeedback]="isRecordingAiFeedback()"
+          [activeValidationRuns]="activeValidationRuns()"
+          [contextStats]="classificationContextStats()"
+          (classifyDocument)="classifyDocumentType()"
+          (approveSuggestion)="approveAiSuggestion($event)"
+          (rejectSuggestion)="rejectAiSuggestion($event)"
+          (editSuggestion)="editAiSuggestion($event)"
+          (addToValidationRun)="addClassificationToValidationRun($event)"
+        ></app-classification-mode-panel>
+
+        @if (validationRunItemError()) {
+          <p class="document-detail__error">{{ validationRunItemError() }}</p>
+        }
+
         <app-ai-suggestions-panel
-          [suggestions]="aiSuggestions()"
+          [suggestions]="extractionSuggestions()"
           [isLoading]="isLoadingAiSuggestions()"
           [errorMessage]="aiSuggestionError()"
           [isRecordingFeedback]="isRecordingAiFeedback()"
