@@ -7,6 +7,7 @@ import { AnnotationsModule } from '../annotations/annotations.module';
 import { FeedbackModule } from '../feedback/feedback.module';
 import { AiModule } from '../ai/ai.module';
 import { PrismaModule } from '../prisma/prisma.module';
+import { PlaygroundModule } from '../playground/playground.module';
 import { RulesModule } from '../rules/rules.module';
 import { TrainingCandidatesModule } from '../training-candidates/training-candidates.module';
 import { ValidationSamplesModule } from '../validation-samples/validation-samples.module';
@@ -22,6 +23,7 @@ import { ValidationRunsModule } from '../validation-runs/validation-runs.module'
     TrainingCandidatesModule,
     FeedbackModule,
     AiModule,
+    PlaygroundModule,
     ValidationSamplesModule,
     ValidationRunsModule,
   ],

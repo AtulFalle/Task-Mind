@@ -14,6 +14,24 @@
       [errorMessage]="validationMetricsErrorMessage()"
     ></app-validation-metrics-panel>
 
+    <section class="document-studio__playground" aria-label="Learning playground">
+      <div>
+        <p class="document-studio__eyebrow">Fast learning loop</p>
+        <h2>Learning Playground</h2>
+        <p>
+          Type or paste messages, ask TaskMindAI to classify them, then approve
+          or correct the result without uploading a document.
+        </p>
+      </div>
+      <a
+        mat-flat-button
+        [routerLink]="['/workspaces', workspace.id, 'playground']"
+      >
+        <mat-icon aria-hidden="true">school</mat-icon>
+        Learning Playground
+      </a>
+    </section>
+
     <section class="document-studio__validation-mode" aria-label="Validation mode">
       <div class="document-studio__validation-mode-copy">
         <p class="document-studio__eyebrow">Validation Mode</p>

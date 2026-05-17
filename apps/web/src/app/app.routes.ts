@@ -30,6 +30,13 @@ export const appRoutes: Route[] = [
       ).then((m) => m.ValidationFlowComponent),
   },
   {
+    path: 'workspaces/:workspaceId/playground',
+    loadComponent: () =>
+      import(
+        './features/workspaces/learning-playground/learning-playground.component'
+      ).then((m) => m.LearningPlaygroundComponent),
+  },
+  {
     path: 'workspaces/:workspaceId/documents/:documentId',
     loadComponent: () =>
       import(

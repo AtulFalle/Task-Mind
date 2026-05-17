@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 
 from app.models.suggestion import AnnotationSuggestion
 from app.models.suggestion import DocumentTypeClassification
+from app.models.suggestion import PlaygroundMessageClassification
 
 
 class SuggestAnnotationsRequest(BaseModel):
@@ -96,4 +97,41 @@ class SuggestDocumentClassificationRequest(BaseModel):
 
 
 class SuggestDocumentClassificationResponse(DocumentTypeClassification):
+    pass
+
+
+class PlaygroundContext(BaseModel):
+    rules: list[dict[str, Any]] = Field(default_factory=list)
+    approved_examples: list[dict[str, Any]] = Field(
+        alias="approvedExamples",
+        default_factory=list,
+    )
+    corrected_examples: list[dict[str, Any]] = Field(
+        alias="correctedExamples",
+        default_factory=list,
+    )
+    rejected_examples: list[dict[str, Any]] = Field(
+        alias="rejectedExamples",
+        default_factory=list,
+    )
+    allowed_intents: list[str] = Field(
+        alias="allowedIntents",
+        default_factory=list,
+    )
+    allowed_priorities: list[str] = Field(
+        alias="allowedPriorities",
+        default_factory=list,
+    )
+
+    model_config = {"populate_by_name": True}
+
+
+class ClassifyMessageIntentRequest(BaseModel):
+    input_text: str = Field(alias="inputText", min_length=1)
+    context: PlaygroundContext = Field(default_factory=PlaygroundContext)
+
+    model_config = {"populate_by_name": True}
+
+
+class ClassifyMessageIntentResponse(PlaygroundMessageClassification):
     pass

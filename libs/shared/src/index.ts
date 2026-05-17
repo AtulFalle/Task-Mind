@@ -70,6 +70,80 @@ export interface WorkspaceValidationReadiness {
   latestContextStats: AiContextStats;
 }
 
+export const PlaygroundIntent = {
+  BILLING: 'BILLING',
+  TECHNICAL_ISSUE: 'TECHNICAL_ISSUE',
+  CANCELLATION: 'CANCELLATION',
+  SALES_INQUIRY: 'SALES_INQUIRY',
+  GENERAL_SUPPORT: 'GENERAL_SUPPORT',
+  UNKNOWN: 'UNKNOWN',
+} as const;
+
+export type PlaygroundIntent =
+  (typeof PlaygroundIntent)[keyof typeof PlaygroundIntent];
+
+export const PlaygroundPriority = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+} as const;
+
+export type PlaygroundPriority =
+  (typeof PlaygroundPriority)[keyof typeof PlaygroundPriority];
+
+export const PlaygroundExampleStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  CORRECTED: 'CORRECTED',
+  REJECTED: 'REJECTED',
+} as const;
+
+export type PlaygroundExampleStatus =
+  (typeof PlaygroundExampleStatus)[keyof typeof PlaygroundExampleStatus];
+
+export interface PlaygroundExample {
+  id: string;
+  workspaceId: string;
+  inputText: string;
+  predictedIntent: PlaygroundIntent;
+  predictedPriority: PlaygroundPriority;
+  predictedReasoning: string;
+  predictedConfidence: number;
+  finalIntent?: PlaygroundIntent;
+  finalPriority?: PlaygroundPriority;
+  correctionReason?: string;
+  status: PlaygroundExampleStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PlaygroundClassificationRequest {
+  inputText: string;
+}
+
+export interface PlaygroundClassificationResponse {
+  exampleId: string;
+  intent: PlaygroundIntent;
+  priority: PlaygroundPriority;
+  reasoning: string;
+  confidence: number;
+  contextStats: AiContextStats;
+}
+
+export interface PlaygroundCorrectionRequest {
+  finalIntent: PlaygroundIntent;
+  finalPriority: PlaygroundPriority;
+  correctionReason: string;
+}
+
+export interface PlaygroundMetrics {
+  workspaceId: string;
+  totalPredictions: number;
+  approved: number;
+  corrected: number;
+  correctionRate: number;
+}
+
 export interface Document {
   id: string;
   workspaceId: string;
@@ -468,6 +542,10 @@ export const FeedbackEventType = {
     'AI_SUGGESTION_CONVERTED_TO_ANNOTATION',
   VALIDATION_RUN_CREATED: 'VALIDATION_RUN_CREATED',
   VALIDATION_RUN_COMPLETED: 'VALIDATION_RUN_COMPLETED',
+  PLAYGROUND_EXAMPLE_CREATED: 'PLAYGROUND_EXAMPLE_CREATED',
+  PLAYGROUND_EXAMPLE_APPROVED: 'PLAYGROUND_EXAMPLE_APPROVED',
+  PLAYGROUND_EXAMPLE_CORRECTED: 'PLAYGROUND_EXAMPLE_CORRECTED',
+  PLAYGROUND_EXAMPLE_REJECTED: 'PLAYGROUND_EXAMPLE_REJECTED',
 } as const;
 
 export type FeedbackEventType =

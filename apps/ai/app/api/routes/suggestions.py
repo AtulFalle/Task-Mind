@@ -4,6 +4,8 @@ import os
 from fastapi import APIRouter, HTTPException
 
 from app.schemas.suggestions import (
+    ClassifyMessageIntentRequest,
+    ClassifyMessageIntentResponse,
     ClassifyDocumentTypeRequest,
     ClassifyDocumentTypeResponse,
     SuggestAnnotationsRequest,
@@ -16,6 +18,7 @@ from app.services.prompt_builder import (
     build_annotation_prompt,
     build_document_classification_prompt,
     build_document_type_prompt,
+    build_message_intent_prompt,
 )
 
 router = APIRouter(tags=["suggestions"])
@@ -59,6 +62,21 @@ async def suggest_document_classification(
 
     try:
         return await ollama_service.suggest_document_classification(prompt)
+    except OllamaServiceError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+
+
+@router.post(
+    "/classify-message-intent",
+    response_model=ClassifyMessageIntentResponse,
+)
+async def classify_message_intent(
+    request: ClassifyMessageIntentRequest,
+) -> ClassifyMessageIntentResponse:
+    prompt = build_message_intent_prompt(request)
+
+    try:
+        return await ollama_service.classify_message_intent(prompt)
     except OllamaServiceError as error:
         raise HTTPException(status_code=503, detail=str(error)) from error
 

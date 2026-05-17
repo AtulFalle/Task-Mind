@@ -1,0 +1,270 @@
+.playground {
+  display: grid;
+  gap: 1.25rem;
+  width: min(100%, 92rem);
+  margin: 0 auto;
+  padding: 1.5rem;
+
+  &__back {
+    justify-self: start;
+  }
+
+  &__header,
+  &__panel,
+  &__prediction,
+  &__correction,
+  &__rules,
+  &__memory {
+    display: grid;
+    min-width: 0;
+  }
+
+  &__header {
+    gap: 0.75rem;
+    padding-bottom: 0.5rem;
+
+    h1,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      color: #172033;
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      line-height: 1.05;
+    }
+
+    p {
+      max-width: 48rem;
+      color: #526276;
+      line-height: 1.5;
+    }
+
+    > span {
+      align-self: start;
+      justify-self: start;
+      padding: 0.45rem 0.65rem;
+      border: 1px solid #cfd8e6;
+      border-radius: 999px;
+      color: #334155;
+      font-weight: 700;
+    }
+  }
+
+  &__eyebrow {
+    color: #2d6f7b !important;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  &__grid {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  &__panel {
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid #d9e0ea;
+    border-radius: 8px;
+    background: #ffffff;
+  }
+
+  &__panel-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: space-between;
+
+    h2,
+    h3 {
+      margin: 0;
+      color: #172033;
+      font-size: 1.05rem;
+    }
+
+    span {
+      color: #526276;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  &__rules,
+  &__prediction,
+  &__correction,
+  &__memory {
+    gap: 0.85rem;
+    padding: 1rem;
+    border: 1px solid #edf1f7;
+    border-radius: 8px;
+    background: #f8fafc;
+
+    h3,
+    p {
+      margin: 0;
+    }
+  }
+
+  &__rules {
+    ul {
+      display: grid;
+      gap: 0.7rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    li {
+      display: grid;
+      gap: 0.2rem;
+      color: #526276;
+      line-height: 1.35;
+    }
+
+    strong {
+      color: #172033;
+    }
+  }
+
+  &__prediction-grid,
+  &__correction-grid,
+  &__metrics {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  &__prediction-grid,
+  &__metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    div {
+      display: grid;
+      gap: 0.25rem;
+      padding: 0.75rem;
+      border: 1px solid #d9e0ea;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    span {
+      color: #526276;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    strong {
+      min-width: 0;
+      color: #172033;
+      font-size: 1rem;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  &__context,
+  &__empty {
+    color: #526276;
+  }
+
+  &__memory-list {
+    display: grid;
+    gap: 0.75rem;
+
+    article {
+      display: grid;
+      gap: 0.55rem;
+      padding: 0.85rem;
+      border: 1px solid #d9e0ea;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    p,
+    dl,
+    dd {
+      margin: 0;
+    }
+
+    dl {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.5rem;
+    }
+
+    dt {
+      color: #526276;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    dd {
+      color: #172033;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    span {
+      color: #526276;
+      line-height: 1.35;
+    }
+  }
+
+  &__status {
+    display: grid;
+    place-items: center;
+    min-height: 18rem;
+  }
+
+  &__error,
+  &__success {
+    margin: 0;
+    padding: 0.85rem;
+    border-radius: 8px;
+  }
+
+  &__error {
+    background: #fdecec;
+    color: #8a1c1c;
+  }
+
+  &__success {
+    background: #eaf8ef;
+    color: #1f6f4a;
+  }
+}
+
+@media (min-width: 900px) {
+  .playground {
+    padding: 2rem;
+
+    &__header {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+    }
+
+    &__grid {
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+      align-items: start;
+    }
+
+    &__correction-grid,
+    &__metrics {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    &__correction-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}

@@ -60,6 +60,32 @@ enum FeedbackEventType {
   AI_SUGGESTION_CONVERTED_TO_ANNOTATION
   VALIDATION_RUN_CREATED
   VALIDATION_RUN_COMPLETED
+  PLAYGROUND_EXAMPLE_CREATED
+  PLAYGROUND_EXAMPLE_APPROVED
+  PLAYGROUND_EXAMPLE_CORRECTED
+  PLAYGROUND_EXAMPLE_REJECTED
+}
+
+enum PlaygroundIntent {
+  BILLING
+  TECHNICAL_ISSUE
+  CANCELLATION
+  SALES_INQUIRY
+  GENERAL_SUPPORT
+  UNKNOWN
+}
+
+enum PlaygroundPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum PlaygroundExampleStatus {
+  PENDING
+  APPROVED
+  CORRECTED
+  REJECTED
 }
 
 enum AiSuggestionStatus {
@@ -120,6 +146,7 @@ model Workspace {
   trainingCandidates TrainingCandidate[]
   aiSuggestions      AiSuggestion[]
   validationRuns     ValidationRun[]
+  playgroundExamples PlaygroundExample[]
   feedbackEvents     FeedbackEvent[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
@@ -301,6 +328,27 @@ model TrainingCandidate {
   @@index([workspaceId, createdAt])
   @@index([documentId, createdAt])
   @@index([annotationId, createdAt])
+  @@index([status, createdAt])
+}
+
+model PlaygroundExample {
+  id                  String                  @id @default(uuid())
+  workspaceId         String
+  workspace           Workspace               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  inputText           String                  @db.Text
+  predictedIntent     PlaygroundIntent
+  predictedPriority   PlaygroundPriority
+  predictedReasoning  String                  @db.Text
+  predictedConfidence Float
+  finalIntent         PlaygroundIntent?
+  finalPriority       PlaygroundPriority?
+  correctionReason    String?                 @db.Text
+  status              PlaygroundExampleStatus @default(PENDING)
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+
+  @@index([workspaceId, createdAt])
+  @@index([workspaceId, status, updatedAt])
   @@index([status, createdAt])
 }
 

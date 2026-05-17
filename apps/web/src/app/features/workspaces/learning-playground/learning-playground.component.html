@@ -1,0 +1,247 @@
+<section class="playground" aria-label="Learning playground">
+  <a
+    class="playground__back"
+    mat-button
+    [routerLink]="['/workspaces', workspaceId()]"
+  >
+    <mat-icon aria-hidden="true">arrow_back</mat-icon>
+    Workspace
+  </a>
+
+  <header class="playground__header">
+    <div>
+      <p class="playground__eyebrow">Teach TaskMindAI with examples</p>
+      <h1>Learning Playground</h1>
+      <p>
+        Enter a message, let AI classify it, then correct it if needed.
+        Corrections are reused in future predictions.
+      </p>
+      <p>This validates whether a small LLM improves with human guidance.</p>
+    </div>
+    @if (workspace(); as workspace) {
+      <span>{{ workspace.name }}</span>
+    }
+  </header>
+
+  @if (workspaceResource.isLoading()) {
+    <div class="playground__status">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else {
+    <div class="playground__grid">
+      <section class="playground__panel" aria-label="Message input">
+        <div class="playground__panel-header">
+          <h2>Message</h2>
+          <span>Intent Classification</span>
+        </div>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Customer message</mat-label>
+          <textarea
+            matInput
+            rows="12"
+            [ngModel]="inputText()"
+            (ngModelChange)="inputText.set($event)"
+            placeholder="I was charged twice and need a refund before our renewal."
+          ></textarea>
+        </mat-form-field>
+
+        <div class="playground__actions">
+          <button
+            mat-flat-button
+            type="button"
+            [disabled]="!canClassify()"
+            (click)="classify()"
+          >
+            @if (isClassifying()) {
+              <mat-spinner diameter="18"></mat-spinner>
+            } @else {
+              <mat-icon aria-hidden="true">psychology</mat-icon>
+            }
+            Ask TaskMindAI
+          </button>
+          <button mat-button type="button" (click)="resetForNextMessage()">
+            <mat-icon aria-hidden="true">refresh</mat-icon>
+            Next text
+          </button>
+        </div>
+
+        <section class="playground__rules" aria-label="Active rules summary">
+          <h3>Active rules</h3>
+          @if (rulesResource.isLoading()) {
+            <p>Loading rules...</p>
+          } @else if (activeRules().length) {
+            <ul>
+              @for (rule of activeRules(); track rule.id) {
+                <li>
+                  <strong>{{ rule.title }}</strong>
+                  <span>{{ rule.ruleText }}</span>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p>No active rules yet.</p>
+          }
+        </section>
+      </section>
+
+      <section class="playground__panel" aria-label="Prediction and feedback">
+        @if (errorMessage()) {
+          <p class="playground__error">{{ errorMessage() }}</p>
+        }
+        @if (successMessage()) {
+          <p class="playground__success">{{ successMessage() }}</p>
+        }
+
+        <div class="playground__prediction">
+          <div class="playground__panel-header">
+            <h2>AI prediction</h2>
+            @if (prediction(); as prediction) {
+              <span>{{ prediction.confidence | percent: '1.0-0' }}</span>
+            }
+          </div>
+
+          @if (prediction(); as prediction) {
+            <div class="playground__prediction-grid">
+              <div>
+                <span>Intent</span>
+                <strong>{{ prediction.intent }}</strong>
+              </div>
+              <div>
+                <span>Priority</span>
+                <strong>{{ prediction.priority }}</strong>
+              </div>
+            </div>
+            <p>{{ prediction.reasoning }}</p>
+            <p class="playground__context">
+              Context used: {{ prediction.contextStats.rulesUsed }} rules,
+              {{ prediction.contextStats.approvedExamplesUsed }} approved,
+              {{ prediction.contextStats.correctedExamplesUsed }} corrected.
+            </p>
+          } @else {
+            <p class="playground__empty">
+              A prediction will appear here after TaskMindAI classifies the
+              message.
+            </p>
+          }
+        </div>
+
+        <div class="playground__correction">
+          <div class="playground__panel-header">
+            <h2>Correction</h2>
+          </div>
+
+          <div class="playground__correction-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Intent</mat-label>
+              <mat-select
+                [ngModel]="selectedIntent()"
+                (ngModelChange)="selectedIntent.set($event)"
+              >
+                @for (intent of intents; track intent) {
+                  <mat-option [value]="intent">{{ intent }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Priority</mat-label>
+              <mat-select
+                [ngModel]="selectedPriority()"
+                (ngModelChange)="selectedPriority.set($event)"
+              >
+                @for (priority of priorities; track priority) {
+                  <mat-option [value]="priority">{{ priority }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Correction reason</mat-label>
+            <textarea
+              matInput
+              rows="4"
+              [ngModel]="correctionReason()"
+              (ngModelChange)="correctionReason.set($event)"
+              placeholder="Refund/payment failure should be billing."
+            ></textarea>
+          </mat-form-field>
+
+          <div class="playground__actions">
+            <button
+              mat-flat-button
+              type="button"
+              [disabled]="!prediction() || isSavingFeedback()"
+              (click)="approve()"
+            >
+              <mat-icon aria-hidden="true">check_circle</mat-icon>
+              Approve
+            </button>
+            <button
+              mat-stroked-button
+              type="button"
+              [disabled]="!canSaveCorrection()"
+              (click)="saveCorrection()"
+            >
+              <mat-icon aria-hidden="true">edit_note</mat-icon>
+              Save correction
+            </button>
+          </div>
+        </div>
+
+        <div class="playground__metrics" aria-label="Validation metrics">
+          <div>
+            <span>Total predictions</span>
+            <strong>{{ metrics()?.totalPredictions ?? 0 }}</strong>
+          </div>
+          <div>
+            <span>Approved</span>
+            <strong>{{ metrics()?.approved ?? 0 }}</strong>
+          </div>
+          <div>
+            <span>Corrected</span>
+            <strong>{{ metrics()?.corrected ?? 0 }}</strong>
+          </div>
+          <div>
+            <span>Correction rate</span>
+            <strong>{{ metrics()?.correctionRate ?? 0 | percent: '1.0-0' }}</strong>
+          </div>
+        </div>
+
+        <section class="playground__memory" aria-label="Previous feedback memory">
+          <div class="playground__panel-header">
+            <h2>Previous feedback memory</h2>
+          </div>
+
+          @if (examplesResource.isLoading()) {
+            <p>Loading feedback...</p>
+          } @else if (reviewedExamples().length) {
+            <div class="playground__memory-list">
+              @for (example of reviewedExamples(); track example.id) {
+                <article>
+                  <p>{{ previewText(example.inputText) }}</p>
+                  <dl>
+                    <div>
+                      <dt>AI</dt>
+                      <dd>{{ example.predictedIntent }}</dd>
+                    </div>
+                    <div>
+                      <dt>Human</dt>
+                      <dd>{{ example.finalIntent ?? example.predictedIntent }}</dd>
+                    </div>
+                  </dl>
+                  @if (example.correctionReason) {
+                    <span>{{ example.correctionReason }}</span>
+                  }
+                </article>
+              }
+            </div>
+          } @else {
+            <p class="playground__empty">No reviewed examples yet.</p>
+          }
+        </section>
+      </section>
+    </div>
+  }
+</section>

@@ -6,8 +6,14 @@ from typing import Any
 import httpx
 from pydantic import ValidationError
 
-from app.models.suggestion import DocumentType, DocumentTypeClassification
+from app.models.suggestion import (
+    DocumentType,
+    DocumentTypeClassification,
+    PlaygroundIntent,
+    PlaygroundPriority,
+)
 from app.schemas.suggestions import (
+    ClassifyMessageIntentResponse,
     ClassifyDocumentTypeResponse,
     SuggestAnnotationsResponse,
     SuggestDocumentClassificationResponse,
@@ -94,6 +100,28 @@ class OllamaService:
                     "matchedSignals": [],
                     "missingSignals": ["valid model classification"],
                 },
+            )
+
+    async def classify_message_intent(
+        self,
+        prompt: str,
+    ) -> ClassifyMessageIntentResponse:
+        fallback = {
+            "intent": PlaygroundIntent.UNKNOWN.value,
+            "priority": PlaygroundPriority.LOW.value,
+            "reasoning": "The model did not return a valid classification.",
+            "confidence": 0,
+        }
+        parsed = await self._generate_json(prompt, fallback)
+
+        try:
+            return ClassifyMessageIntentResponse.model_validate(parsed)
+        except ValidationError:
+            return ClassifyMessageIntentResponse(
+                intent=PlaygroundIntent.UNKNOWN,
+                priority=PlaygroundPriority.LOW,
+                reasoning="The model did not return a valid classification.",
+                confidence=0,
             )
 
     async def _generate_json(

@@ -23,6 +23,7 @@
   &__rules,
   &__training,
   &__memory,
+  &__playground,
   &__validation-mode,
   &__validation-runs,
   &__primary-grid,
@@ -38,6 +39,7 @@
   }
 
   &__validation-mode,
+  &__playground,
   &__validation-runs {
     gap: 1rem;
     padding: 1.25rem;
@@ -169,6 +171,11 @@
     }
 
     &__validation-runs {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+    }
+
+    &__playground {
       grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
     }

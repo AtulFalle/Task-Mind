@@ -11,6 +11,21 @@ class DocumentType(str, Enum):
     UNKNOWN = "UNKNOWN"
 
 
+class PlaygroundIntent(str, Enum):
+    BILLING = "BILLING"
+    TECHNICAL_ISSUE = "TECHNICAL_ISSUE"
+    CANCELLATION = "CANCELLATION"
+    SALES_INQUIRY = "SALES_INQUIRY"
+    GENERAL_SUPPORT = "GENERAL_SUPPORT"
+    UNKNOWN = "UNKNOWN"
+
+
+class PlaygroundPriority(str, Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+
+
 class AnnotationSuggestion(BaseModel):
     field_name: str = Field(alias="fieldName", min_length=1, max_length=80)
     selected_text: str = Field(alias="selectedText", min_length=1)
@@ -43,6 +58,20 @@ class DocumentTypeClassification(BaseModel):
     reasoning: str = Field(min_length=1)
     confidence: float = Field(ge=0, le=1)
     applicability: ApplicabilityResult | None = None
+
+    @field_validator("reasoning")
+    @classmethod
+    def trim_reasoning(cls, value: str) -> str:
+        return value.strip()
+
+    model_config = {"populate_by_name": True}
+
+
+class PlaygroundMessageClassification(BaseModel):
+    intent: PlaygroundIntent
+    priority: PlaygroundPriority
+    reasoning: str = Field(min_length=1)
+    confidence: float = Field(ge=0, le=1)
 
     @field_validator("reasoning")
     @classmethod

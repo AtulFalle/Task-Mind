@@ -1,4 +1,5 @@
 from app.schemas.suggestions import (
+    ClassifyMessageIntentRequest,
     ClassifyDocumentTypeRequest,
     SuggestAnnotationsRequest,
     SuggestDocumentClassificationRequest,
@@ -9,6 +10,7 @@ MAX_CLASSIFICATION_DOCUMENT_CHARS = 4000
 MAX_RULES = 25
 MAX_ANNOTATIONS = 25
 MAX_AI_FEEDBACK = 10
+MAX_MESSAGE_CHARS = 8000
 
 
 def build_annotation_prompt(request: SuggestAnnotationsRequest) -> str:
@@ -205,5 +207,83 @@ Context:
 Document text:
 \"\"\"
 {document_text}
+\"\"\"
+"""
+
+
+def build_message_intent_prompt(request: ClassifyMessageIntentRequest) -> str:
+    context = request.context
+    rules = context.rules[:10]
+    approved_examples = context.approved_examples[:10]
+    corrected_examples = context.corrected_examples[:10]
+    rejected_examples = context.rejected_examples[:5]
+    allowed_intents = context.allowed_intents or [
+        "BILLING",
+        "TECHNICAL_ISSUE",
+        "CANCELLATION",
+        "SALES_INQUIRY",
+        "GENERAL_SUPPORT",
+        "UNKNOWN",
+    ]
+    allowed_priorities = context.allowed_priorities or ["LOW", "MEDIUM", "HIGH"]
+    input_text = request.input_text[:MAX_MESSAGE_CHARS]
+
+    return f"""You are TaskMindAI, a constrained message intent classifier.
+
+Goal:
+Classify a pasted customer support message using workspace rules and human feedback memory.
+
+Allowed intent values:
+{allowed_intents}
+
+Allowed priority values:
+{allowed_priorities}
+
+Hard rules:
+- Return valid JSON only.
+- Do not include markdown.
+- Choose only one intent from the allowed intent values.
+- Choose only one priority from the allowed priority values.
+- Use UNKNOWN when the message is unclear or does not match the learned labels.
+- Learn from corrected examples. When corrected examples conflict with model guesses, follow the human correction.
+- Use approved examples as positive patterns.
+- Avoid mistakes shown in rejected examples.
+- Keep reasoning short and concrete.
+- Confidence must be between 0 and 1.
+
+Intent guidance:
+- BILLING: payment, refund, charge, invoice, failed payment, plan charge.
+- TECHNICAL_ISSUE: login, crash, error, broken feature, bug, cannot access.
+- CANCELLATION: cancel, unsubscribe, close account, stop renewal.
+- SALES_INQUIRY: pricing, demo, enterprise, quote, buying questions.
+- GENERAL_SUPPORT: clear support request that does not fit another label.
+- UNKNOWN: unclear, unrelated, or insufficient evidence.
+
+Priority guidance:
+- HIGH: urgent business impact, failed payment/refund escalation, account locked, cancellation risk, severe outage.
+- MEDIUM: needs support but no immediate escalation.
+- LOW: general question, informational, low urgency.
+
+Response schema:
+{{
+  "intent": "BILLING",
+  "priority": "HIGH",
+  "reasoning": "Mentions failed payment and refund.",
+  "confidence": 0.82
+}}
+
+Context:
+{{
+  "rules": {rules},
+  "approvedExamples": {approved_examples},
+  "correctedExamples": {corrected_examples},
+  "rejectedExamples": {rejected_examples},
+  "allowedIntents": {allowed_intents},
+  "allowedPriorities": {allowed_priorities}
+}}
+
+Message:
+\"\"\"
+{input_text}
 \"\"\"
 """

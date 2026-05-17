@@ -2,6 +2,11 @@ import { HttpClient, httpResource } from '@angular/common/http';
 import { Injectable, inject, type Injector, type Signal } from '@angular/core';
 import type {
   CreateOperationalRuleRequest,
+  PlaygroundClassificationRequest,
+  PlaygroundClassificationResponse,
+  PlaygroundCorrectionRequest,
+  PlaygroundExample,
+  PlaygroundMetrics,
   CreateTrainingCandidateRequest,
   CreateValidationRunRequest,
   CreateWorkspaceRequest,
@@ -138,6 +143,59 @@ export class WorkspaceService {
         return id ? `${this.apiUrl}/${id}/validation-readiness` : undefined;
       },
       { injector },
+    );
+  }
+
+  getPlaygroundExamples(workspaceId: Signal<string | null>, injector: Injector) {
+    return httpResource<PlaygroundExample[]>(
+      () => {
+        const id = workspaceId();
+        return id ? `${this.apiUrl}/${id}/playground/examples` : undefined;
+      },
+      { defaultValue: [], injector },
+    );
+  }
+
+  getPlaygroundMetrics(workspaceId: Signal<string | null>, injector: Injector) {
+    return httpResource<PlaygroundMetrics>(
+      () => {
+        const id = workspaceId();
+        return id ? `${this.apiUrl}/${id}/playground/metrics` : undefined;
+      },
+      { injector },
+    );
+  }
+
+  classifyPlaygroundMessage(
+    workspaceId: string,
+    payload: PlaygroundClassificationRequest,
+  ): Promise<PlaygroundClassificationResponse> {
+    return firstValueFrom(
+      this.httpClient.post<PlaygroundClassificationResponse>(
+        `${this.apiUrl}/${workspaceId}/playground/classify`,
+        payload,
+      ),
+    );
+  }
+
+  approvePlaygroundExample(exampleId: string): Promise<PlaygroundExample> {
+    return firstValueFrom(
+      this.httpClient.patch<PlaygroundExample>(
+        `/api/playground/examples/${exampleId}/approve`,
+        {},
+      ),
+    );
+  }
+
+  correctPlaygroundExample(
+    exampleId: string,
+    payload: PlaygroundCorrectionRequest,
+  ): Promise<PlaygroundExample> {
+    return firstValueFrom(
+      this.httpClient.patch<PlaygroundExample>(
+        `/api/playground/examples/${exampleId}/correct`,
+        payload,
+      ),
     );
   }
 
